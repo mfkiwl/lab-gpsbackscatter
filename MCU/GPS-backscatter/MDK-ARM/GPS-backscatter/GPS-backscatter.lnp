@@ -1,0 +1,26 @@
+--cpu Cortex-M0+
+"gps-backscatter\startup_stm32l051xx.o"
+"gps-backscatter\main.o"
+"gps-backscatter\stm32l0xx_it.o"
+"gps-backscatter\stm32l0xx_hal_msp.o"
+"gps-backscatter\user_dac.o"
+"gps-backscatter\stm32l0xx_hal_tim.o"
+"gps-backscatter\stm32l0xx_hal_tim_ex.o"
+"gps-backscatter\stm32l0xx_hal.o"
+"gps-backscatter\stm32l0xx_hal_i2c.o"
+"gps-backscatter\stm32l0xx_hal_i2c_ex.o"
+"gps-backscatter\stm32l0xx_hal_rcc.o"
+"gps-backscatter\stm32l0xx_hal_rcc_ex.o"
+"gps-backscatter\stm32l0xx_hal_flash_ramfunc.o"
+"gps-backscatter\stm32l0xx_hal_flash.o"
+"gps-backscatter\stm32l0xx_hal_flash_ex.o"
+"gps-backscatter\stm32l0xx_hal_gpio.o"
+"gps-backscatter\stm32l0xx_hal_dma.o"
+"gps-backscatter\stm32l0xx_hal_pwr.o"
+"gps-backscatter\stm32l0xx_hal_pwr_ex.o"
+"gps-backscatter\stm32l0xx_hal_cortex.o"
+"gps-backscatter\system_stm32l0xx.o"
+--library_type=microlib --strict --scatter "GPS-backscatter\GPS-backscatter.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "GPS-backscatter.map" -o GPS-backscatter\GPS-backscatter.axf
