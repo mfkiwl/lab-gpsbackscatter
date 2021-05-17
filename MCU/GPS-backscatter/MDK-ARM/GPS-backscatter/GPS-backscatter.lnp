@@ -1,9 +1,9 @@
 --cpu Cortex-M0+
 "gps-backscatter\startup_stm32l051xx.o"
+"gps-backscatter\user_dac.o"
 "gps-backscatter\main.o"
 "gps-backscatter\stm32l0xx_it.o"
 "gps-backscatter\stm32l0xx_hal_msp.o"
-"gps-backscatter\user_dac.o"
 "gps-backscatter\stm32l0xx_hal_tim.o"
 "gps-backscatter\stm32l0xx_hal_tim_ex.o"
 "gps-backscatter\stm32l0xx_hal.o"

@@ -16,3 +16,6 @@ Test/
 *.7z
 opensource.zip
 *.asv
+*.o
+MCU/GPS-backscatter/MDK-ARM/GPS-backscatter/GPS-backscatter.hex
+*.crf
