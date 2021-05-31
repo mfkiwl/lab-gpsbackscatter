@@ -15,14 +15,21 @@
 #define VOL_CHA_MV 150
 #define VOL_CHB_MV 180
 
+#define SW_PN_MODE  // FUNC DEFINE
+
+#define PN_CODE     (0X74) // 0111_0100
+#define PN_CODE_LEN (7)    // 
+#define PN_MASK_MSB (0X40) // 7 BIT
+
 
 
 typedef enum {
-    CHANNEL_A = 0,
-    CHANNEL_B = 1,
+    CHANNEL_A  = 0,
+    CHANNEL_B  = 1,
 
-    MODE_SW   = 0,
-    MODE_HOLD = 1,
+    MODE_SW    = 0,
+    MODE_HOLD  = 1,
+    MODE_SW_PN = 2,
 
 }ENUM_;
 

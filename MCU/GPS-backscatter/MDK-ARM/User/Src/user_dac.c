@@ -147,27 +147,53 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if(++cnt_sw == (Tsw_2 / 500))
     {
         u8 mode = HAL_GPIO_ReadPin(MODE_GPIO_Port, MODE_Pin)? MODE_HOLD : MODE_SW;
+        static u16 pnCode = PN_CODE;
+        static u8 cntCode = PN_CODE_LEN;
+#ifdef SW_PN_MODE
+        mode = (mode == MODE_SW)? MODE_SW_PN : MODE_HOLD;
+        if(mode == MODE_HOLD)
+        {// reset
+            pnCode = PN_CODE;
+            cntCode = PN_CODE_LEN;
+        }
+#endif
         if(++i % 2 == 0)
         {
-            // sw               
+            // sw: action here             
             HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
             user_dacSend(CHANNEL_A);
             user_dacSend(CHANNEL_B);
         }
         else
         {
-            // mid sw
-            if((flag_power && mode == MODE_SW) || mode == MODE_HOLD)
+            // mid sw: set channal voltage here
+            // PN_CODE
+            if((mode == MODE_SW_PN && (pnCode & PN_MASK_MSB))||(mode == MODE_SW && flag_power) || mode == MODE_HOLD)
             {
                 user_dacSetVol(VOL_CHA_MV, CHANNEL_A);
                 user_dacSetVol(VOL_CHB_MV, CHANNEL_B);
-                flag_power = FALSE;
             }
             else
             {
                 user_dacSetVol(0, CHANNEL_A);
                 user_dacSetVol(0, CHANNEL_B);
-                flag_power = TRUE;
+            }
+            if(mode == MODE_SW)
+            {
+                flag_power = flag_power ? FALSE : TRUE; // reverse
+            }
+            else if(mode == MODE_SW_PN)
+            {
+                if(cntCode <= 1)
+                {// reset
+                    pnCode = PN_CODE;
+                    cntCode = PN_CODE_LEN;
+                }
+                else
+                {
+                    pnCode <<= 1;
+                    cntCode--;
+                }
             }
         }
         cnt_sw = 0;

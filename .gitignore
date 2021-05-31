@@ -19,3 +19,7 @@ opensource.zip
 *.o
 MCU/GPS-backscatter/MDK-ARM/GPS-backscatter/GPS-backscatter.hex
 *.crf
+*.o
+MCU/GPS-backscatter/MDK-ARM/JLinkLog.txt
+MCU/GPS-backscatter/MDK-ARM/JLinkLog.txt
+MCU/GPS-backscatter/MDK-ARM/GPS-backscatter/GPS-backscatter.build_log.htm
