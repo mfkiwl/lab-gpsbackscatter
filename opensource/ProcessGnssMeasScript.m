@@ -5,24 +5,14 @@
 % prFileName = 'gnss_log_2020_08_07_15_09_27.txt'; %with duty cycling, no carrier phase
 close all;
 clear all;
+%% data
 % prFileName = 'gnss_log_2019_08_15_10_46_22.txt';
-prFileName = 'gnss_log_2021_01_23_16_26_40.txt';
-% prFileName = 'gnss_log_2021_01_04_12_01_29.txt'; 
-% prFileName = 'gnss_log_2020_08_07_03_46_58.txt'; 
-
-
+prFileName = 'P2_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt';
+ 
 % Raw and GPS data Path
 % dirName = 'D:\browser\GnssAnalysisWindowsV3.0.3.0\demofiles\adrDemo';
-dirName = '..\Test';
-% dirName = 'D:\Filerec\dingding\Mi8';
+dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
 % dirName = 'D:\Filerec\dingding';
-% dirName = '..\dhx_paper\TEST\Room_810_PCL_0804\Test0_5Hz\1';
-
-%% data
-%To add your own data:
-% save data from GnssLogger App, and edit dirName and prFileName appropriately
-%dirName = 'put the full path for your directory here';
-%prFileName = 'put the pseuoranges log file name here';
 
 %% parameters
 param.llaTrueDegDegM = [];
@@ -60,8 +50,6 @@ if isempty(allGpsEph), return, end
 %     load([dirName '\' 'gnssMean.mat'],'gnssMeas', 'gnssMeas_BKS', 'gnssMeas_NBKS');
 % end
  
-%  gnssRaw_BKS = gnssRaw.(1);
- 
 % [gnssMeasBackscattered]=gnssMeasSeprate(gnssMeas,prFileName);
 %% plot pseudoranges and pseudorange rates
 h1 = figure;
@@ -72,46 +60,11 @@ h3 = figure;
 PlotCno(gnssMeas,prFileName,colors);
 
 %% Calculate the position of satellites
-% close all
-% gpsPvt = GpsWlsPvt(gnssMeasBackscattered,allGpsEph);
-% N = length(gnssMeas_BKS.FctSeconds);
-% for i=1:N
-%     iValid = find(isfinite(gnssMeas_BKS.PrM(i,:))); %index into valid svid
-%     svid    = gnssMeas_BKS.Svid(iValid)';
-%     
-%     [gpsEph,iSv] = ClosestGpsEph(allGpsEph,svid,gnssMeas_BKS.FctSeconds(i));
-%     svid = svid(iSv); %svid for which we have ephemeris
-%     numSvs = length(svid); %number of satellites this epoch
-%     
-%     
-%     gpsPvt_BKS(i).numSvs = numSvs;
-%     gpsPvt_BKS(i).svid = svid;
-% 
-% 
-%     %GPS Week number:
-%     weekNumber = floor(-double(gnssRaw_BKS.FullBiasNanos(i))*1e-9/GpsConstants.WEEKSEC);
-% %    use tRxSeconds 
-%     for k=1:numSvs
-% %         position.pos(k) = SatPosition(gpsEph(k),gnssMeas_BKS.tRxSeconds(i), weekNumber);
-%         [position(k,1), position(k,2), position(k,3)] = SatPosition(gpsEph(k),gnssMeas_BKS.tRxSeconds(i), weekNumber);
-%     end
-%     gpsPvt_BKS(i).position = position;
-%     gpsPvt_BKS(i).gpsEph = gpsEph;
-%     if numSvs<4
-%         continue;%skip to next epoch
-%     end
-% 
-% end
 %% compute WLS position and velocity
 % gpsPvt = GpsWlsPvt(gnssMeas_BKS,allGpsEph);
-
 % [gnssMeas] = PrMAdrSmoother(gnssMeas);
 % gnssMeas.PrM = gnssMeas.PrMSmooth;
-
-%%original code 
-% gpsPvt= GpsWlsPvtBackscatter(gnssMeas,allGpsEph);%
-%%our code for backsctter
-gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph);
+gpsPvt= GpsWlsPvtBackscatter(gnssMeas,allGpsEph);%
 
 %% plot Pvt results
 h4 = figure;

@@ -4,36 +4,23 @@ figure;
 figure;
 PlotCno(gnssMeas,prFileName,colors);
 
-
-% % pick out the strongest sat signal as stander
-% % every sat strongest(max) -> strongest's strongest
-% [strongestSig,SigIndex]=max(gnssMeas.Cn0DbHz);
-% [MaxCn0DbHz,Index]=max(strongestSig);
-% StongestSvid=gnssMeas.Svid(Index);
-
-% 
+% pick out the strongest sat signal as stander
+[strongestSig,SigIndex]=max(gnssMeas.Cn0DbHz);
+[MaxCn0DbHz,Index]=max(strongestSig);
+StongestSvid=gnssMeas.Svid(Index);
 
 
-% Index = 8;
-
-
-gnssCno = gnssMeas.Cn0DbHz;
+% Index ;
+Index
+gnssCnoMax=gnssMeas.Cn0DbHz(:,Index);
 
 % set the nan as 0
-for i=1:numel(gnssCno)
-    if isnan(gnssCno(i)) 
-       gnssCno(i)=0; 
+for i=1:length(gnssCnoMax)
+    if isnan(gnssCnoMax(i)) 
+       gnssCnoMax(i)=0; 
     end
     
 end
-
-average = var(gnssCno);
-variance = std(gnssCno);
-[MaxCn0Pick,Index]=min(variance);
-SuitabelSvid=gnssMeas.Svid(Index);
-
-gnssCnoMax=gnssCno(:,Index);
-
 % plot for scale view
 figure;
 plot(gnssCnoMax);
@@ -47,32 +34,51 @@ pickUp = zeros(1, LenGnss);
 pickDn = zeros(1, LenGnss);
 midThre = 0;
 cntPick = ones(1,2);
-for i=1:LenGnss
-    if i+3 <= LenGnss
-        if mod(i,4) == 1
-           dataBuf = gnssCnoMax(i:i+3); 
-           midThre = median(dataBuf); 
-        end
-    end
-    
-    if gnssCnoMax(i) >= midThre - 1
-        pickUp(i) = 1;
+% for i=1:LenGnss
+%     if i+9 <= LenGnss
+%         if mod(i,10) == 1
+%            dataBuf = gnssCnoMax(i:i+9); 
+%            midThre = median(dataBuf); 
+%         end
+%     end
+%     
+%     if gnssCnoMax(i) >= midThre - 1
+%         pickUp(i) = 1;
 %         cntPick(1) = cntPick(1) + 1;
+%     else
+%         pickDn(i) = 1;
+%         cntPick(2) = cntPick(2) + 1;
+%     end
+%     
+% end
+
+CnoSmooth = smooth(gnssCnoMax, 7);
+for i=1:LenGnss
+    if gnssCnoMax(i) > CnoSmooth(i)
+        pickUp(i) = 1;
+        cntPick(1) = cntPick(1) + 1;
     else
         pickDn(i) = 1;
-%         cntPick(2) = cntPick(2) + 1;
+        cntPick(2) = cntPick(2) + 1;
     end
     
 end
 
-% gnssMeasSep.Bks = pickUp .* gnssCnoMax';
-% gnssMeasSep.Org = pickDn .* gnssCnoMax';
-% figure
-% plot(gnssCnoMax);
-% hold on
-% plot(gnssMeasSep.Bks);
-% plot(gnssMeasSep.Org);
-% hold off
+
+
+% plot
+gnssMeasSep.Bks = pickUp .* gnssCnoMax';
+gnssMeasSep.Org = pickDn .* gnssCnoMax';
+gnssMeasSep.smooth = smooth(gnssCnoMax, 7);
+figure
+plot(gnssCnoMax);
+hold on
+plot(gnssMeasSep.smooth)
+plot(gnssMeasSep.Bks, 'r*');
+plot(gnssMeasSep.Org, 'g*');
+hold off
+
+
 
 % Seperate BKS and NBKS from
 iBKS = pickUp==1;
@@ -93,10 +99,12 @@ gnssMeas_NBKS = cell2struct(cellGnssMeas_NBKS, fieldMeas, 1);
 
 save( 'gnssMean.mat','gnssMeas', 'gnssMeas_BKS', 'gnssMeas_NBKS');
 
+% figure;
+% hold on
+% plot(gnssMeas_BKS.Cn0DbHz(:,1));
+
 figure;
-plot(gnssMeas_BKS.Cn0DbHz(:,1));
-
-
+PlotCno(gnssMeas_BKS,prFileName,colors);
 
 % chose data for later processing
 % LocsCnoIndex= find(pickUp==1);
@@ -123,5 +131,7 @@ plot(gnssMeas_BKS.Cn0DbHz(:,1));
 % gnssBksCnoMax=gnssMeasBackscattered.Cn0DbHz(:,Index);
 % figure;
 % plot(gnssBksCnoMax);
+
+
 
 end

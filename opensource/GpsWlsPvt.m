@@ -56,8 +56,6 @@ gpsPvt.numSvs          = zeros(N,1);
 gpsPvt.hdop            = zeros(N,1)+inf;
 
 % N: number of sample with respect to time
-Tcount = 0;
-iLast = 0;
 for i=1:N
     iValid = find(isfinite(gnssMeas.PrM(i,:))); %index into valid svid
     svid    = gnssMeas.Svid(iValid)';
@@ -70,54 +68,22 @@ for i=1:N
         continue;%skip to next epoch
     end
     
-    Tcount = Tcount + 1;
-%     if  mod(Tcount,2) == 1
-%         iLast = i;
-%         continue;
-%     end
-
-    if  Tcount == 1
-        iLast = i;
-        continue;
-    end
-    
-    %% Recover Last Data -------------------------------------------------------
-    iValidLast = find(isfinite(gnssMeas.PrM(iLast,:))); %index into valid svid
-    svidLast    = gnssMeas.Svid(iValidLast)';
-
-    [gpsEphLast,iSvLast] = ClosestGpsEph(allGpsEph,svidLast,gnssMeas.FctSeconds(iLast));
-    svidLast = svidLast(iSvLast); %svid for which we have ephemeris
-    numSvsLast = length(svidLast); %number of satellites this epoch
-    gpsPvt.numSvs(iLast) = numSvsLast;    
-    
-    svid = [svidLast ; svid];
-    gpsEph = [gpsEphLast  gpsEph];
-    
     %% WLS PVT -----------------------------------------------------------------
     %for those svIds with valid ephemeris, pack prs matrix for WlsNav
-%     prM     = gnssMeas.PrM(i,iValid(iSv))';
-%     prSigmaM= gnssMeas.PrSigmaM(i,iValid(iSv))';
-% %     prSigmaM = prSigmaM .^ 2;
-
-    prM     = [gnssMeas.PrM(iLast,iValidLast(iSvLast)) gnssMeas.PrM(i,iValid(iSv))]';
-    prSigmaM= [gnssMeas.PrSigmaM(iLast,iValidLast(iSvLast)) gnssMeas.PrSigmaM(i,iValid(iSv))]';
+    prM     = gnssMeas.PrM(i,iValid(iSv))';
+    prSigmaM= gnssMeas.PrSigmaM(i,iValid(iSv))';
+%     prSigmaM = prSigmaM .^ 2;
     
-%     prrMps  = gnssMeas.PrrMps(i,iValid(iSv));
-%     prrSigmaMps = gnssMeas.PrrSigmaMps(i,iValid(iSv));
+    prrMps  = gnssMeas.PrrMps(i,iValid(iSv))';
+    prrSigmaMps = gnssMeas.PrrSigmaMps(i,iValid(iSv))';
 %     prrSigmaMps = prrSigmaMps .^2;
-    prrMps  = [gnssMeas.PrrMps(iLast,iValidLast(iSvLast)) gnssMeas.PrrMps(i,iValid(iSv))]';
-    prrSigmaMps = [gnssMeas.PrrSigmaMps(iLast,iValidLast(iSvLast)) gnssMeas.PrrSigmaMps(i,iValid(iSv))]';
     
-    % nx2 
-%     tRx = ones(numSvs,1)*weekNum(i),gnssMeas.tRxSeconds(i,iValid(iSv))';
-    tRx = [ones(numSvsLast,1)*weekNum(iLast),gnssMeas.tRxSeconds(iLast,iValidLast(iSvLast))';
-        ones(numSvs,1)*weekNum(i),gnssMeas.tRxSeconds(i,iValid(iSv))'];
-    numSvsAll = [numSvsLast numSvs];  
+    tRx = [ones(numSvs,1)*weekNum(i),gnssMeas.tRxSeconds(i,iValid(iSv))'];
     
     prs = [tRx, svid, prM, prSigmaM, prrMps, prrSigmaMps];
     
     xo(5:7) = zeros(3,1); %initialize speed to zero
-    [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo,numSvsAll);%compute WLS solution
+    [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo);%compute WLS solution
     xo = xo + xHat;
     
     %extract position states
@@ -132,10 +98,8 @@ for i=1:N
     gpsPvt.allVelMps(i,:) = vNed;
     gpsPvt.allBcDotMps(i) = xo(8);
     
-%     H = H(numSvs+1:end , [1 2 3 5]);
     %compute HDOP
-%     H = [H(:,1:3)*RE2N', ones(numSvs,1)]; %observation matrix in NED
-    H = [H(:,1:3)*RE2N', ones(numSvs+numSvsLast,1)]; %observation matrix in NED
+    H = [H(:,1:3)*RE2N', ones(numSvs,1)]; %observation matrix in NED
     P = inv(H'*H);%unweighted covariance
     gpsPvt.hdop(i) = sqrt(P(1,1)+P(2,2));
     
@@ -152,7 +116,6 @@ for i=1:N
     P = inv(H'*(Wrr'*Wrr)*H); %weighted covariance
     gpsPvt.sigmaVelMps(i,:) = sqrt(diag(P(1:3,1:3)));
     %%end WLS PVT --------------------------------------------------------------
-    iLast = i;
 end
 
 end %end of function GpsWlsPvt
