@@ -1,26 +1,25 @@
-function  [gnssMeas_BKS, gnssMeas_NBKS]=Seprate(gnssRaw, gnssMeas,prFileName)
-figure;
-[colors] = PlotPseudoranges(gnssMeas,prFileName);
-figure;
-PlotCno(gnssMeas,prFileName,colors);
+function  [gnssMeas_BKS, gnssMeas_NBKS]=Seprate(gnssMeas,prFileName)
+% figure;
+% [colors] = PlotPseudoranges(gnssMeas,prFileName);
+% figure;
+% PlotCno(gnssMeas,prFileName,colors);
 
-% pick out the strongest sat signal as stander
-[strongestSig,SigIndex]=max(gnssMeas.Cn0DbHz);
-[MaxCn0DbHz,Index]=max(strongestSig);
-StongestSvid=gnssMeas.Svid(Index);
-
+% pick out the strongest sat signal as standard
+[strongestSig,SigIndex] = max(gnssMeas.Cn0DbHz);
+[MaxCn0DbHz,Index] = max(strongestSig);
+StongestSvid = gnssMeas.Svid(Index);
 
 % Index ;
 Index
-gnssCnoMax=gnssMeas.Cn0DbHz(:,Index);
+gnssCnoMax = gnssMeas.Cn0DbHz(:,Index);
 
 % set the nan as 0
 for i=1:length(gnssCnoMax)
     if isnan(gnssCnoMax(i)) 
        gnssCnoMax(i)=0; 
     end
-    
 end
+
 % plot for scale view
 figure;
 plot(gnssCnoMax);
@@ -32,7 +31,7 @@ LenGnss = length(gnssCnoMax);
 % pickDn -> original sat signal       NBKS
 pickUp = zeros(1, LenGnss);
 pickDn = zeros(1, LenGnss);
-midThre = 0;
+% midThre = 0;
 cntPick = ones(1,2);
 % for i=1:LenGnss
 %     if i+9 <= LenGnss
@@ -64,9 +63,7 @@ for i=1:LenGnss
     
 end
 
-
-
-% plot
+% plot to check seperation
 gnssMeasSep.Bks = pickUp .* gnssCnoMax';
 gnssMeasSep.Org = pickDn .* gnssCnoMax';
 gnssMeasSep.smooth = smooth(gnssCnoMax, 7);
@@ -80,7 +77,7 @@ hold off
 
 
 
-% Seperate BKS and NBKS from
+% Seperate BKS and NBKS 
 iBKS = pickUp==1;
 iORG = pickDn==1;
 cellGnssMeas = struct2cell(gnssMeas);
@@ -97,41 +94,15 @@ end
 gnssMeas_BKS = cell2struct(cellGnssMeas_BKS, fieldMeas, 1);
 gnssMeas_NBKS = cell2struct(cellGnssMeas_NBKS, fieldMeas, 1);
 
-save( 'gnssMean.mat','gnssMeas', 'gnssMeas_BKS', 'gnssMeas_NBKS');
+% save seperate date
+% save( 'gnssMean.mat','gnssMeas', 'gnssMeas_BKS', 'gnssMeas_NBKS');
 
 % figure;
 % hold on
 % plot(gnssMeas_BKS.Cn0DbHz(:,1));
 
 figure;
+[colors] = PlotPseudoranges(gnssMeas,prFileName);
 PlotCno(gnssMeas_BKS,prFileName,colors);
-
-% chose data for later processing
-% LocsCnoIndex= find(pickUp==1);
-% LocsCnoIndex= find(pickDn==1);
-% gnssMeasBackscattered=gnssMeas(LocsCnoIndex);
-%
-% gnssMeasBackscattered.Svid=gnssMeas.Svid;
-% gnssMeasBackscattered.AzDeg=gnssMeas.AzDeg;
-% gnssMeasBackscattered.ElDeg=gnssMeas.ElDeg;
-% gnssMeasBackscattered.FctSeconds=gnssMeas.FctSeconds(LocsCnoIndex,:);
-% gnssMeasBackscattered.ClkDCount=gnssMeas.ClkDCount(LocsCnoIndex,:);
-% gnssMeasBackscattered.HwDscDelS=gnssMeas.HwDscDelS(LocsCnoIndex,:);
-% gnssMeasBackscattered.tRxSeconds=gnssMeas.tRxSeconds(LocsCnoIndex,:);
-% gnssMeasBackscattered.tTxSeconds=gnssMeas.tTxSeconds(LocsCnoIndex,:);
-% gnssMeasBackscattered.PrM=gnssMeas.PrM(LocsCnoIndex,:);
-% gnssMeasBackscattered.PrSigmaM=gnssMeas.PrSigmaM(LocsCnoIndex,:);
-% gnssMeasBackscattered.DelPrM=gnssMeas.DelPrM(LocsCnoIndex,:);
-% gnssMeasBackscattered.PrrMps=gnssMeas.PrrMps(LocsCnoIndex,:);
-% gnssMeasBackscattered.PrrSigmaMps=gnssMeas.PrrSigmaMps(LocsCnoIndex,:);
-% gnssMeasBackscattered.AdrM=gnssMeas.AdrM(LocsCnoIndex,:);
-% gnssMeasBackscattered.AdrSigmaM=gnssMeas.AdrSigmaM(LocsCnoIndex,:);
-% gnssMeasBackscattered.AdrState=gnssMeas.AdrState(LocsCnoIndex,:);
-% gnssMeasBackscattered.Cn0DbHz=gnssMeas.Cn0DbHz(LocsCnoIndex,:);
-% gnssBksCnoMax=gnssMeasBackscattered.Cn0DbHz(:,Index);
-% figure;
-% plot(gnssBksCnoMax);
-
-
 
 end

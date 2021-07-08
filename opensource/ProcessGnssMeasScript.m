@@ -40,8 +40,6 @@ if isempty(allGpsEph), return, end
 %  [gnssMeas]= ProcessGnssMeasForBackscatter(gnssRaw); % Process raw measurements read from ReadGnssLogger
  
 [gnssMeas]= ProcessGnssMeasForBackscatter(gnssRaw);
-[gnssMeas_BKS, gnssMeas_NBKS]=Seprate(gnssRaw,gnssMeas,prFileName);
-
 % if ~exist([dirName '\' 'gnssMean.mat'], 'file')
 %     [gnssMeas]= ProcessGnssMeasForBackscatter(gnssRaw);
 %     [gnssMeas_BKS, gnssMeas_NBKS]=Seprate(gnssRaw,gnssMeas,prFileName);
@@ -58,6 +56,8 @@ h2 = figure;
 PlotPseudorangeRates(gnssMeas,prFileName,colors);
 h3 = figure;
 PlotCno(gnssMeas,prFileName,colors);
+%% seperate BKS
+[gnssMeas_BKS, gnssMeas_NBKS]=Seprate(gnssMeas,prFileName);
 
 %% Calculate the position of satellites
 %% compute WLS position and velocity

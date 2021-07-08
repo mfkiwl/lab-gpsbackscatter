@@ -270,6 +270,12 @@ for i=1:size(dataFilter,1)
     eval(ts);
     %create an index vector from the expression in dataFilter{i,2}
     ts = sprintf('iSi = %s;',dataFilter{i,2});
+    
+    % set nan State = 0
+    if contains(ts,'State')
+        State= fillmissing(State,'constant',0);
+    end
+    
     eval(ts);
     
     %AND the iS index values on each iteration of i
