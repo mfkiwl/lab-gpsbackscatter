@@ -1,9 +1,16 @@
 close all;
 clear all;
+dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+
 prFileName = 'P2_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
-dirName = 'E:\Users\ASUS\Documents\Lab Research\Submit\西203测试\0612测试集_3Tag_35Point\Tag2_Loc11';
+
 %% 
-param.llaTrueDegDegM = [30.511739 114.406770 50]; %设置GroundTruth
+fileID = fopen('groundTruth.txt','r');
+formatSpec = '%d %f %f %f';
+FileGroundTruthLLA = fscanf(fileID,formatSpec,[4 35])';
+
+% param.llaTrueDegDegM = [30.511739 114.406770 50]; % 设置GroundTruth
+param.llaTrueDegDegM = FileGroundTruthLLA(:,2:4);
 %% Filter
 dataFilter = SetDataFilter;
 [gnssRaw,gnssAnalysis] = ReadGnssLogger(dirName,prFileName,dataFilter);
@@ -15,10 +22,6 @@ allGpsEph = GetNasaHourlyEphemeris(utcTime,dirName);
 if isempty(allGpsEph), return, end
 %% 
 [gnssMeas] = ProcessGnssMeas(gnssRaw);
-
-%% 数据分割存储
-
-%% 
 %% plot pseudoranges and pseudorange rates
 h1 = figure;
 [colors] = PlotPseudoranges(gnssMeas,prFileName);
@@ -26,10 +29,9 @@ h2 = figure;
 PlotPseudorangeRates(gnssMeas,prFileName,colors);
 h3 = figure;
 PlotCno(gnssMeas,prFileName,colors);
-
 %%
 [gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssRaw, gnssMeas,prFileName)
- %% plot Pvt results
+%% plot Pvt results
 gpsPvt_BKS = GpsWlsPvt(gnssMeas_BKS,allGpsEph); 
 h4 = figure;
 ts = 'Raw Pseudoranges, Weighted Least Squares solution';
@@ -68,11 +70,10 @@ prrSigmaMps = gnssMeas_BKS.PrrSigmaMps(i,iValid(iSv))';
 tRx = [ones(numSvs,1)*weekNum(i),gnssMeas_BKS.tRxSeconds(i,iValid(iSv))'];    
 prs_BKS = [tRx, svid, prM, prSigmaM, prrMps, prrSigmaMps];
 
-
 %找没弹过的数据的第一组
-iValid = find(isfinite(gnssMeas_NBKS.PrM(i,:))); %index into valid svid %这一步没看懂
+iValid = find(isfinite(gnssMeas_NBKS.PrM(i,:))); %index into valid svid % 这一步没看懂
 svid    = gnssMeas_NBKS.Svid(iValid)';
-[gpsEph,iSv] = ClosestGpsEph(allGpsEph,svid,gnssMeas_NBKS.FctSeconds(i)); %从星历中挑选对应的卫星
+[gpsEph,iSv] = ClosestGpsEph(allGpsEph,svid,gnssMeas_NBKS.FctSeconds(i)); % 从星历中挑选对应的卫星
 weekNum     = floor(gnssMeas_NBKS.FctSeconds/GpsConstants.WEEKSEC);
 numSvs = length(svid); %number of satellites this epoch
 prM     = gnssMeas_NBKS.PrM(i,iValid(iSv))';
@@ -90,22 +91,4 @@ xo(1:3)= Lla2Xyz(param.llaTrueDegDegM)';
 % [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo);%compute WLS solution
 [xHat,~,~,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph,xo);
 xo = xo + xHat;
-
-
-% % [xHat,z,svPos,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo) 定位算法输入格式
-% jWk=1; jSec=2; jSv=3; jPr=4; jPrSig=5; jPrr=6; jPrrSig=7;%index of columns
-% ttxWeek = prs(:,jWk); %week of tx. Note - we could get a rollover, when ttx_sv
-% ttxSeconds =  prs(:,jSec) - prs(:,jPr)/GpsConstants.LIGHTSPEED; %ttx by sv clock 
-% dtsv = GpsEph2Dtsv(gpsEph,ttxSeconds);
-% dtsv = dtsv(:); %make into a column for compatibility with other time vectors
-% ttx = ttxSeconds - dtsv; %subtract dtsv from sv time to get true gps time
-% %calculate satellite position at ttx
-% [svXyzTtx,dtsv,svXyzDot,dtsvDot]=GpsEph2Pvt(gpsEph,[ttxWeek,ttx]);
-% % 输入groundTruth进行位置计算
-% groundTruth=Lla2Xyz(svXyzTtx);
-% % 坐标变换，卫星
-% svLlaTtx=Xyz2Lla(svXyzTtx);
-% xo(1:3)= Lla2Xyz(groundTruth)';
-% svXyzTtx_mirror=mirrorTransform(svXyzTtx,groundTruth);
-
 end
