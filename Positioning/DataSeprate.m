@@ -10,7 +10,7 @@ formatSpec = '%d %f %f %f';
 FileGroundTruthLLA = fscanf(fileID,formatSpec,[4 35])';
 GroundTruthLLA = FileGroundTruthLLA(:,2:4);
 % param.llaTrueDegDegM = [30.511739 114.406770 50]; % 设置GroundTruth
-param.llaTrueDegDegM = GroundTruthLLA(3,:);
+param.llaTrueDegDegM = GroundTruthLLA(2,:);
 %% Filter
 dataFilter = SetDataFilter;
 [gnssRaw,gnssAnalysis] = ReadGnssLogger(dirName,prFileName,dataFilter);
@@ -29,35 +29,41 @@ if isempty(allGpsEph), return, end
 % PlotPseudorangeRates(gnssMeas,prFileName,colors);
 % h3 = figure;
 % PlotCno(gnssMeas,prFileName,colors);
-%%
+%% Data Seperate
 [gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssMeas,prFileName);
 %% plot Pvt results
+% Original
+gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph); 
+h4 = figure;
+ts = 'Raw Pseudoranges, Weighted Least Squares solution';
+PlotPvt(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+% h5 = figure;
+% PlotPvtStates(gpsPvt_BKS,prFileName);
+
+% BKS
 gpsPvt_BKS = GpsWlsPvt(gnssMeas_BKS,allGpsEph); 
 h4 = figure;
-ts = 'Raw Pseudoranges, Weighted Least Squares solution';
+ts = 'BKS_Raw Pseudoranges, Weighted Least Squares solution';
 PlotPvt(gpsPvt_BKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
-h5 = figure;
-PlotPvtStates(gpsPvt_BKS,prFileName);
+% h5 = figure;
+% PlotPvtStates(gpsPvt_BKS,prFileName);
 
+% NBKS
 gpsPvt_NBKS = GpsWlsPvt(gnssMeas_NBKS,allGpsEph); 
 h4 = figure;
-ts = 'Raw Pseudoranges, Weighted Least Squares solution';
+ts = 'NBKS_Raw Pseudoranges, Weighted Least Squares solution';
 PlotPvt(gpsPvt_NBKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
-h5 = figure;
-PlotPvtStates(gpsPvt_NBKS,prFileName);
+% h5 = figure;
+% PlotPvtStates(gpsPvt_NBKS,prFileName);
 %% 卫星坐标映射
 % 这一部分程序根据当前时刻的卫星位置判断出未来卫星位置
 N1 = length(gnssMeas_BKS.FctSeconds);
 N2 = length(gnssMeas_NBKS.FctSeconds);
 % 选取更短的N
-if N1>N2
-    N=N2;
-else
-    N=N1;
-end
+N = min([N1 N2]);
 
 for i= 1:N
-    %找弹的数据的第一组
+%找弹的数据的第一组
 iValid = find(isfinite(gnssMeas_BKS.PrM(i,:))); %index into valid svid %这一步没看懂
 svid    = gnssMeas_BKS.Svid(iValid)';
 [gpsEph,iSv] = ClosestGpsEph(allGpsEph,svid,gnssMeas_BKS.FctSeconds(i)); %从星历中挑选对应的卫星
