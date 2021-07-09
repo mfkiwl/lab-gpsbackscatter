@@ -1,4 +1,4 @@
-function [xHat,z,svPos,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph,xo)
+function [xHat,z,svPos,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph_BKS, gpsEph_NBKS,xo)
 % [xHat,z,svPos,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo)
 % 计算WLS PVT 解, xHat
 % given pseudoranges, pr rates, and initial state
@@ -31,15 +31,16 @@ function [xHat,z,svPos,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph,xo
 
 jWk=1; jSec=2; jSv=3; jPr=4; jPrSig=5; jPrr=6; jPrrSig=7;%index of columns
 
-[bOk,numVal] = checkInputs(prs_BKS, gpsEph, xo);
+% Check Input
+[bOk,numVal] = checkInputs(prs_BKS, gpsEph_BKS, xo);
 if ~bOk
     error('prs_BKS输入不对，inputs not right size, or not properly aligned with each other')
 end
-
-[bOk,numVal] = checkInputs(prs_NBKS, gpsEph, xo);
+[bOk,numVal] = checkInputs(prs_NBKS, gpsEph_NBKS, xo);
 if ~bOk
     error('prs_NBKS输入不对，inputs not right size, or not properly aligned with each other')
 end
+
 % TagTrueDegDegM = [30.96827 118.74069 150];%设置中，背向散射节点的位置
 xHat=[]; z=[]; H=[]; svPos=[];
 xyz0 = xo(1:3); %初始坐标位置
@@ -56,28 +57,30 @@ ttxWeek_NBKS = prs_NBKS(:,jWk);
 
 ttxSeconds_BKS =  prs_BKS(:,jSec) - prs_BKS(:,jPr)/GpsConstants.LIGHTSPEED
 ttxSeconds_NBKS =  prs_NBKS(:,jSec) - prs_NBKS(:,jPr)/GpsConstants.LIGHTSPEED
-delta=ttxSeconds_BKS-ttxSeconds_NBKS
+% delta=ttxSeconds_BKS-ttxSeconds_NBKS
+
 % this is accurate satellite time of tx, because we use actual pseudo-ranges 
 % here, not corrected ranges
 % write the equation for pseudorange to see the rx clock error exactly cancel
 % to get precise GPS time: we subtract the satellite clock error from sv time, 
 % as done next:
 %% 双份星历
-dtsv_BKS = GpsEph2Dtsv(gpsEph,ttxSeconds_BKS);
+dtsv_BKS = GpsEph2Dtsv(gpsEph_BKS,ttxSeconds_BKS);
 dtsv_BKS = dtsv_BKS(:); %make into a column for compatibility with other time vectors
 ttx_BKS = ttxSeconds_BKS - dtsv_BKS; %subtract dtsv from sv time to get true gps time
 %calculate satellite position at ttx
-[svXyzTtx_BKS,dtsv_BKS,svXyzDot_BKS,dtsvDot_BKS]=GpsEph2Pvt(gpsEph,[ttxWeek_BKS,ttx_BKS]);
+[svXyzTtx_BKS,dtsv_BKS,svXyzDot_BKS,dtsvDot_BKS]=GpsEph2Pvt(gpsEph_BKS,[ttxWeek_BKS,ttx_BKS]);
 svXyzTrx_BKS = svXyzTtx_BKS; %initialize svXyz at time of reception
 
-dtsv_NBKS = GpsEph2Dtsv(gpsEph,ttxSeconds_NBKS);
+dtsv_NBKS = GpsEph2Dtsv(gpsEph_NBKS,ttxSeconds_NBKS);
 dtsv_NBKS = dtsv_NBKS(:); %make into a column for compatibility with other time vectors
 ttx_NBKS = ttxSeconds_NBKS - dtsv_NBKS; %subtract dtsv from sv time to get true gps time
 %calculate satellite position at ttx
-[svXyzTtx_NBKS,dtsv_NBKS,svXyzDot_NBKS,dtsvDot_NBKS]=GpsEph2Pvt(gpsEph,[ttxWeek_NBKS,ttx_NBKS]);
+[svXyzTtx_NBKS,dtsv_NBKS,svXyzDot_NBKS,dtsvDot_NBKS]=GpsEph2Pvt(gpsEph_NBKS,[ttxWeek_NBKS,ttx_NBKS]);
 svXyzTrx_NBKS = svXyzTtx_NBKS; %initialize svXyz at time of reception
 % delat_ttx =ttx_BKS-ttx_NBKS
 % delat_sv=svXyzTrx_BKS-svXyzTrx_NBKS
+
 %% 卫星对称映射
 sv_length=length(svXyzTrx_BKS(:,1));
 svXyzTtx_BKS_mirrored=ones(size(svXyzTrx_BKS));
@@ -109,6 +112,7 @@ end
 %重新构造求解参数矩阵
  prs=[prs_BKS;prs_NBKS];
 %  svXyzTrx=[svXyzTrx_BKS_mirrored;svXyzTrx_NBKS];
+
 %%
 %%Compute weights ---------------------------------------------------
 Wpr = diag(1./prs(:,jPrSig));
@@ -126,7 +130,7 @@ while norm(dx) > GnssThresholds.MAXDELPOSFORNAVM
         'while loop did not converge after %d iterations',whileCount);
     %% 这一步用来做飞行时间矫正，判断飞行时间是否回过于长，弹过和不弹的分开判断
      prs=[prs_BKS;prs_NBKS];
-    for i=1:length(gpsEph)
+    for i=1:length(gpsEph_BKS)
         % calculate tflight from, bc and dtsv
         dtflight = (prs_BKS(i,jPr)-bc)/GpsConstants.LIGHTSPEED + dtsv_BKS(i);
         % Use of bc: bc>0 <=> pr too big <=> tflight too big.
@@ -139,13 +143,9 @@ while norm(dx) > GnssThresholds.MAXDELPOSFORNAVM
     end
     %% 输出校准量
      CalibrationRes=RawSvXyzTrx_BKS_mirrored-svXyzTrx_BKS_mirrored;
-    for i=1:length(gpsEph)
+    for i=1:length(gpsEph_NBKS)
         % calculate tflight from, bc and dtsv
         dtflight = (prs_NBKS(i,jPr)-bc)/GpsConstants.LIGHTSPEED + dtsv_NBKS(i);
-        % Use of bc: bc>0 <=> pr too big <=> tflight too big.
-        %   i.e. trx = trxu - bc/GpsConstants.LIGHTSPEED
-        % Use of dtsv: dtsv>0 <=> pr too small <=> tflight too small.
-        %   i.e ttx = ttxsv - dtsv
 %         svXyzTrx_NBKS = svXyzTtx_NBKS
            RawSvXyzTrx=svXyzTrx_NBKS;
         svXyzTrx_NBKS(i,:) = FlightTimeCorrection(svXyzTtx_NBKS(i,:), dtflight);
@@ -157,8 +157,7 @@ while norm(dx) > GnssThresholds.MAXDELPOSFORNAVM
   
   svXyzTrx=[svXyzTrx_BKS_mirrored;svXyzTrx_NBKS];
   numVal=length(svXyzTrx);
-    v = xyz0(:)*ones(1,numVal,1) - svXyzTrx';%v(:,i) = vector from sv(i) to xyz0
-%   v = xyz0(:)*ones(1,numVal,1) - svXyzTrx';%v(:,i) = vector from sv(i) to xyz0
+  v = xyz0(:)*ones(1,numVal,1) - svXyzTrx';%v(:,i) = vector from sv(i) to xyz0
   range = sqrt( sum(v.^2) );
   v = v./(ones(3,1)*range); % line of sight unit vectors from sv to xo
 dtsv=[dtsv_BKS;dtsv_NBKS];
@@ -182,6 +181,8 @@ dtsv=[dtsv_BKS;dtsv_NBKS];
 
   %Now calculate the a-posteriori range residual
   zPr = zPr-H*dx;
+  
+  % display info
   string=['whileCount = ',num2str(whileCount),', norm(dx) =',num2str(norm(dx))];
   disp(string)
   lla0=Xyz2Lla(xyz0(:)');

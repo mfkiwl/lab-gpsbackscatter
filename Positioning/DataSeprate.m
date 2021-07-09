@@ -31,6 +31,8 @@ if isempty(allGpsEph), return, end
 % PlotCno(gnssMeas,prFileName,colors);
 %% Data Seperate
 [gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssMeas,prFileName);
+
+if 0
 %% plot Pvt results
 % Original
 gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph); 
@@ -55,6 +57,7 @@ ts = 'NBKS_Raw Pseudoranges, Weighted Least Squares solution';
 PlotPvt(gpsPvt_NBKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
 % h5 = figure;
 % PlotPvtStates(gpsPvt_NBKS,prFileName);
+end
 %% 卫星坐标映射
 % 这一部分程序根据当前时刻的卫星位置判断出未来卫星位置
 N1 = length(gnssMeas_BKS.FctSeconds);
@@ -62,39 +65,41 @@ N2 = length(gnssMeas_NBKS.FctSeconds);
 % 选取更短的N
 N = min([N1 N2]);
 
-for i= 1:N
-%找弹的数据的第一组
-iValid = find(isfinite(gnssMeas_BKS.PrM(i,:))); %index into valid svid %这一步没看懂
-svid    = gnssMeas_BKS.Svid(iValid)';
-[gpsEph,iSv] = ClosestGpsEph(allGpsEph,svid,gnssMeas_BKS.FctSeconds(i)); %从星历中挑选对应的卫星
 weekNum     = floor(gnssMeas_BKS.FctSeconds/GpsConstants.WEEKSEC);
-numSvs = length(svid); %number of satellites this epoch
-prM     = gnssMeas_BKS.PrM(i,iValid(iSv))';
-prSigmaM= gnssMeas_BKS.PrSigmaM(i,iValid(iSv))';    
-prrMps  = gnssMeas_BKS.PrrMps(i,iValid(iSv))';
-prrSigmaMps = gnssMeas_BKS.PrrSigmaMps(i,iValid(iSv))';    
-tRx = [ones(numSvs,1)*weekNum(i),gnssMeas_BKS.tRxSeconds(i,iValid(iSv))'];    
-prs_BKS = [tRx, svid, prM, prSigmaM, prrMps, prrSigmaMps];
+for i= 1:N
+    %找弹的数据的第一组
+    iValid = find(isfinite(gnssMeas_BKS.PrM(i,:))); %index into valid svid %这一步没看懂
+    svid    = gnssMeas_BKS.Svid(iValid)';
+    [gpsEph_BKS,iSv] = ClosestGpsEph(allGpsEph,svid,gnssMeas_BKS.FctSeconds(i)); %从星历中挑选对应的卫星
+    svid = svid(iSv); %svid for which we have ephemeris
+    numSvs = length(svid); %number of satellites this epoch
+        
+    prM     = gnssMeas_BKS.PrM(i,iValid(iSv))';
+    prSigmaM= gnssMeas_BKS.PrSigmaM(i,iValid(iSv))';    
+    prrMps  = gnssMeas_BKS.PrrMps(i,iValid(iSv))';
+    prrSigmaMps = gnssMeas_BKS.PrrSigmaMps(i,iValid(iSv))';    
+    tRx = [ones(numSvs,1)*weekNum(i),gnssMeas_BKS.tRxSeconds(i,iValid(iSv))'];    
+    prs_BKS = [tRx, svid, prM, prSigmaM, prrMps, prrSigmaMps];
 
-%找没弹过的数据的第一组
-iValid = find(isfinite(gnssMeas_NBKS.PrM(i,:))); %index into valid svid % 这一步没看懂
-svid    = gnssMeas_NBKS.Svid(iValid)';
-[gpsEph,iSv] = ClosestGpsEph(allGpsEph,svid,gnssMeas_NBKS.FctSeconds(i)); % 从星历中挑选对应的卫星
-weekNum     = floor(gnssMeas_NBKS.FctSeconds/GpsConstants.WEEKSEC);
-numSvs = length(svid); %number of satellites this epoch
-prM     = gnssMeas_NBKS.PrM(i,iValid(iSv))';
-prSigmaM= gnssMeas_NBKS.PrSigmaM(i,iValid(iSv))';    
-prrMps  = gnssMeas_NBKS.PrrMps(i,iValid(iSv))';
-prrSigmaMps = gnssMeas_NBKS.PrrSigmaMps(i,iValid(iSv))';    
-tRx = [ones(numSvs,1)*weekNum(i),gnssMeas_NBKS.tRxSeconds(i,iValid(iSv))'];    
-prs_NBKS = [tRx, svid, prM, prSigmaM, prrMps, prrSigmaMps];
+    %找没弹过的数据的第一组
+    iValid = find(isfinite(gnssMeas_NBKS.PrM(i,:))); %index into valid svid % 这一步没看懂
+    svid    = gnssMeas_NBKS.Svid(iValid)';
+    [gpsEph_NBKS,iSv] = ClosestGpsEph(allGpsEph,svid,gnssMeas_NBKS.FctSeconds(i)); % 从星历中挑选对应的卫星
+    svid = svid(iSv); %svid for which we have ephemeris
+    numSvs = length(svid); %number of satellites this epoch
+    
+    prM     = gnssMeas_NBKS.PrM(i,iValid(iSv))';
+    prSigmaM= gnssMeas_NBKS.PrSigmaM(i,iValid(iSv))';    
+    prrMps  = gnssMeas_NBKS.PrrMps(i,iValid(iSv))';
+    prrSigmaMps = gnssMeas_NBKS.PrrSigmaMps(i,iValid(iSv))';    
+    tRx = [ones(numSvs,1)*weekNum(i),gnssMeas_NBKS.tRxSeconds(i,iValid(iSv))'];    
+    prs_NBKS = [tRx, svid, prM, prSigmaM, prrMps, prrSigmaMps];
 
-xo =zeros(8,1);
-xo(5:7) = zeros(3,1); %initialize speed to zero
-% ground truth 30.969,118.7409,100
-% groundTruth= [30.96827 118.74069 150];
-xo(1:3)= Lla2Xyz(param.llaTrueDegDegM)';
-% [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo);%compute WLS solution
-[xHat,~,~,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph,xo);
-xo = xo + xHat;
+    % WLS
+    xo =zeros(8,1);
+    xo(5:7) = zeros(3,1); %initialize speed to zero
+    xo(1:3)= Lla2Xyz(param.llaTrueDegDegM)';
+    % [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo);%compute WLS solution
+    [xHat,~,~,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph_BKS,gpsEph_NBKS,xo);
+    xo = xo + xHat;
 end
