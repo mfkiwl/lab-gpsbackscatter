@@ -2,15 +2,15 @@ close all;
 clear all;
 dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
 
-prFileName = 'P2_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
+prFileName = 'P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
 
-%% 
+%% Read GroundTruth from file
 fileID = fopen('groundTruth.txt','r');
 formatSpec = '%d %f %f %f';
 FileGroundTruthLLA = fscanf(fileID,formatSpec,[4 35])';
-
+GroundTruthLLA = FileGroundTruthLLA(:,2:4);
 % param.llaTrueDegDegM = [30.511739 114.406770 50]; % 设置GroundTruth
-param.llaTrueDegDegM = FileGroundTruthLLA(:,2:4);
+param.llaTrueDegDegM = GroundTruthLLA(3,:);
 %% Filter
 dataFilter = SetDataFilter;
 [gnssRaw,gnssAnalysis] = ReadGnssLogger(dirName,prFileName,dataFilter);
@@ -22,15 +22,15 @@ allGpsEph = GetNasaHourlyEphemeris(utcTime,dirName);
 if isempty(allGpsEph), return, end
 %% 
 [gnssMeas] = ProcessGnssMeas(gnssRaw);
-%% plot pseudoranges and pseudorange rates
-h1 = figure;
-[colors] = PlotPseudoranges(gnssMeas,prFileName);
-h2 = figure;
-PlotPseudorangeRates(gnssMeas,prFileName,colors);
-h3 = figure;
-PlotCno(gnssMeas,prFileName,colors);
+% %% plot pseudoranges and pseudorange rates
+% h1 = figure;
+% [colors] = PlotPseudoranges(gnssMeas,prFileName);
+% h2 = figure;
+% PlotPseudorangeRates(gnssMeas,prFileName,colors);
+% h3 = figure;
+% PlotCno(gnssMeas,prFileName,colors);
 %%
-[gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssRaw, gnssMeas,prFileName)
+[gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssMeas,prFileName);
 %% plot Pvt results
 gpsPvt_BKS = GpsWlsPvt(gnssMeas_BKS,allGpsEph); 
 h4 = figure;
