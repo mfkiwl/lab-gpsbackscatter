@@ -3,7 +3,7 @@ clear all;
 dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
 
 prFileName = 'P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
-
+% prFileName = 'P07_150mV_100mV_Tag2_gnss_log_2021_06_12_19_10_10.txt'; 
 %% Read GroundTruth from file
 fileID = fopen('groundTruth.txt','r');
 formatSpec = '%d %f %f %f';
@@ -58,7 +58,9 @@ PlotPvt(gpsPvt_NBKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置�
 % h5 = figure;
 % PlotPvtStates(gpsPvt_NBKS,prFileName);
 end
-%% 卫星坐标映射
+
+%%
+if 1
 % 这一部分程序根据当前时刻的卫星位置判断出未来卫星位置
 N1 = length(gnssMeas_BKS.FctSeconds);
 N2 = length(gnssMeas_NBKS.FctSeconds);
@@ -72,7 +74,7 @@ for i= 1:N
     svid    = gnssMeas_BKS.Svid(iValid)';
     [gpsEph_BKS,iSv] = ClosestGpsEph(allGpsEph,svid,gnssMeas_BKS.FctSeconds(i)); %从星历中挑选对应的卫星
     svid = svid(iSv); %svid for which we have ephemeris
-    numSvs = length(svid); %number of satellites this epoch
+    numSvs = length(svid) %number of satellites this epoch
         
     prM     = gnssMeas_BKS.PrM(i,iValid(iSv))';
     prSigmaM= gnssMeas_BKS.PrSigmaM(i,iValid(iSv))';    
@@ -86,7 +88,7 @@ for i= 1:N
     svid    = gnssMeas_NBKS.Svid(iValid)';
     [gpsEph_NBKS,iSv] = ClosestGpsEph(allGpsEph,svid,gnssMeas_NBKS.FctSeconds(i)); % 从星历中挑选对应的卫星
     svid = svid(iSv); %svid for which we have ephemeris
-    numSvs = length(svid); %number of satellites this epoch
+    numSvs = length(svid) %number of satellites this epoch
     
     prM     = gnssMeas_NBKS.PrM(i,iValid(iSv))';
     prSigmaM= gnssMeas_NBKS.PrSigmaM(i,iValid(iSv))';    
@@ -98,7 +100,7 @@ for i= 1:N
     % WLS
     xo =zeros(8,1);
     xo(5:7) = zeros(3,1); %initialize speed to zero
-    xo(1:3)= Lla2Xyz(param.llaTrueDegDegM)';
+    xo(1:3)= Lla2Xyz( GroundTruthLLA(6,:))';
     % [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo);%compute WLS solution
     [xHat,~,~,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph_BKS,gpsEph_NBKS,xo);
     xo = xo + xHat;
@@ -108,6 +110,10 @@ for i= 1:N
     gpsPvt_H.allLlaDegDegM(i,:) = llaDegDegM;
 end
 
+% gpsPvt_H.allLlaDegDegM = gpsPvt_H.allLlaDegDegM(find(gpsPvt_H.allLlaDegDegM(:,3) < 60),:);
+% gpsPvt_H.allLlaDegDegM = gpsPvt_H.allLlaDegDegM(find(gpsPvt_H.allLlaDegDegM(:,3) > 30),:);
+
 h5 = figure;
 ts = 'HBKS_Raw Pseudoranges, Weighted Least Squares solution';
 PlotPvt(gpsPvt_H,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+end
