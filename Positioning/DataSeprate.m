@@ -2,15 +2,15 @@ close all;
 clear all;
 dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
 
-% prFileName = 'P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
-prFileName = 'P07_150mV_100mV_Tag2_gnss_log_2021_06_12_19_10_10.txt'; 
+prFileName = 'P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
+% prFileName = 'P07_150mV_100mV_Tag2_gnss_log_2021_06_12_19_10_10.txt'; 
 %% Read GroundTruth from file
 fileID = fopen('groundTruth.txt','r');
 formatSpec = '%d %f %f %f';
 FileGroundTruthLLA = fscanf(fileID,formatSpec,[4 35])';
 GroundTruthLLA = FileGroundTruthLLA(:,2:4);
 % param.llaTrueDegDegM = [30.511739 114.406770 50]; % 设置GroundTruth
-param.llaTrueDegDegM = GroundTruthLLA(7,:);
+param.llaTrueDegDegM = GroundTruthLLA(2,:);
 %% Filter
 dataFilter = SetDataFilter;
 [gnssRaw,gnssAnalysis] = ReadGnssLogger(dirName,prFileName,dataFilter);
@@ -58,7 +58,9 @@ PlotPvt(gpsPvt_NBKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置�
 % h5 = figure;
 % PlotPvtStates(gpsPvt_NBKS,prFileName);
 end
-%% 卫星坐标映射
+
+%%
+if 1
 % 这一部分程序根据当前时刻的卫星位置判断出未来卫星位置
 N1 = length(gnssMeas_BKS.FctSeconds);
 N2 = length(gnssMeas_NBKS.FctSeconds);
@@ -114,3 +116,4 @@ end
 h5 = figure;
 ts = 'HBKS_Raw Pseudoranges, Weighted Least Squares solution';
 PlotPvt(gpsPvt_H,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+end
