@@ -1,6 +1,6 @@
 close all;
 clear all;
-dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
 
 prFileName = 'P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
 
