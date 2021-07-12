@@ -102,4 +102,12 @@ for i= 1:N
     % [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo);%compute WLS solution
     [xHat,~,~,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph_BKS,gpsEph_NBKS,xo);
     xo = xo + xHat;
+    
+    %extract position states
+    llaDegDegM = Xyz2Lla(xo(1:3)');
+    gpsPvt_H.allLlaDegDegM(i,:) = llaDegDegM;
 end
+
+h5 = figure;
+ts = 'HBKS_Raw Pseudoranges, Weighted Least Squares solution';
+PlotPvt(gpsPvt_H,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
