@@ -2,7 +2,10 @@ close all;
 clear all;
 dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
 
-prFileName = 'P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
+% prFileName = 'P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
+% P04_150mV_100mV_Tag2_gnss_log_2021_06_12_18_35_51
+% prFileName = 'P03_150mV_100mV_Tag2_gnss_log_2021_06_12_18_01_51.txt'; 
+prFileName = 'P04_150mV_100mV_Tag2_gnss_log_2021_06_12_18_35_51.txt'; 
 % prFileName = 'P07_150mV_100mV_Tag2_gnss_log_2021_06_12_19_10_10.txt'; 
 %% Read GroundTruth from file
 fileID = fopen('groundTruth.txt','r');
@@ -10,7 +13,7 @@ formatSpec = '%d %f %f %f';
 FileGroundTruthLLA = fscanf(fileID,formatSpec,[4 35])';
 GroundTruthLLA = FileGroundTruthLLA(:,2:4);
 % param.llaTrueDegDegM = [30.511739 114.406770 50]; % 设置GroundTruth
-param.llaTrueDegDegM = GroundTruthLLA(2,:);
+param.llaTrueDegDegM = GroundTruthLLA(7,:);
 %% Filter
 dataFilter = SetDataFilter;
 [gnssRaw,gnssAnalysis] = ReadGnssLogger(dirName,prFileName,dataFilter);
@@ -89,7 +92,7 @@ for i= 1:N
     svid    = gnssMeas_BKS.Svid(iValid)';
     [gpsEph_BKS,iSv] = ClosestGpsEph(allGpsEph,svid,gnssMeas_BKS.FctSeconds(i)); %从星历中挑选对应的卫星
     svid = svid(iSv); %svid for which we have ephemeris
-    numSvs = length(svid) %number of satellites this epoch
+    numSvs = length(svid); %number of satellites this epoch
         
     prM     = gnssMeas_BKS.PrM(i,iValid(iSv))';
     prSigmaM= gnssMeas_BKS.PrSigmaM(i,iValid(iSv))';    
@@ -103,7 +106,7 @@ for i= 1:N
     svid    = gnssMeas_NBKS.Svid(iValid)';
     [gpsEph_NBKS,iSv] = ClosestGpsEph(allGpsEph,svid,gnssMeas_NBKS.FctSeconds(i)); % 从星历中挑选对应的卫星
     svid = svid(iSv); %svid for which we have ephemeris
-    numSvs = length(svid) %number of satellites this epoch
+    numSvs = length(svid); %number of satellites this epoch
     
     prM     = gnssMeas_NBKS.PrM(i,iValid(iSv))';
     prSigmaM= gnssMeas_NBKS.PrSigmaM(i,iValid(iSv))';    
@@ -113,13 +116,15 @@ for i= 1:N
     prs_NBKS = [tRx, svid, prM, prSigmaM, prrMps, prrSigmaMps];
 
     % WLS
-    xo =zeros(8,1);
-    xo(5:7) = zeros(3,1); %initialize speed to zero
+    xo =zeros(10,1);
+    xo(6:8) = zeros(3,1); %initialize speed to zero
     xo(1:3)= Lla2Xyz( GroundTruthLLA(6,:))';
     % [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo);%compute WLS solution
     [xHat,~,~,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph_BKS,gpsEph_NBKS,xo);
-    xo = xo + xHat;
-    
+    % xHat是10*1的矩阵，其中123位对应定位位置 4，钟差弹过的，5钟差没弹的卫星；678对应速度，9钟差弹过的，10钟差没弹的
+    xo = xo + xHat; %包含速度，钟差等参数
+%     xo(1:3) = xo(1:3) + xHat(1:3);
+%     30.5118,114.4068,43.758
     %extract position states
     llaDegDegM = Xyz2Lla(xo(1:3)');
 %     gpsPvt_H.allLlaDegDegM(i,:) = llaDegDegM;
@@ -162,7 +167,7 @@ end
 
 % gpsPvt_H.allLlaDegDegM = gpsPvt_H.allLlaDegDegM(find(gpsPvt_H.allLlaDegDegM(:,3) < 60),:);
 % gpsPvt_H.allLlaDegDegM = gpsPvt_H.allLlaDegDegM(find(gpsPvt_H.allLlaDegDegM(:,3) > 30),:);
-
+gpsPvt.FctSeconds      = 1:length(gpsPvt.numSvs);%FctSeconds缩短了
 h5 = figure;
 ts = 'HBKS_Raw Pseudoranges, Weighted Least Squares solution';
 PlotPvt(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
