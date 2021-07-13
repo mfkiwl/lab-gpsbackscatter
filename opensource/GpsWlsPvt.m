@@ -103,7 +103,14 @@ for i=1:N
     H = [H(:,1:3)*RE2N', ones(numSvs,1)]; %observation matrix in NED
     P = inv(H'*H);%unweighted covariance
     gpsPvt.hdop(i) = sqrt(P(1,1)+P(2,2));
-    
+    %% 误差分析
+%     gpsPvt.pdop(i)  = sqrt(P(1,1)+P(2,2)+P(3,3));
+%     gpsPvt.tdop(i)  = sqrt(P(4,4));
+%     gpsPvt.gdop(i)  = sqrt(P(1,1)+P(2,2)+P(3,3)+P(4,4));
+%     disp(['GPS HDOP：',num2str(gpsPvt.hdop(i))])
+%     disp(['GPS PDOP：',num2str(gpsPvt.pdop(i))])
+%     disp(['GPS TDOP：',num2str(gpsPvt.tdop(i))])
+%     disp(['GPS GDOP：',num2str(gpsPvt.gdop(i))])
     %compute variance of llaDegDegM
     %inside LsPvt the weights are used like this: 
     %  z = Hx, premultiply by W: Wz = WHx, and solve for x:

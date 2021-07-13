@@ -68,6 +68,21 @@ N2 = length(gnssMeas_NBKS.FctSeconds);
 N = min([N1 N2]);
 
 weekNum     = floor(gnssMeas_BKS.FctSeconds/GpsConstants.WEEKSEC);
+
+%% 初始化赋值
+gpsPvt.FctSeconds      = gnssMeas.FctSeconds;
+gpsPvt.allLlaDegDegM   = zeros(N,3)+NaN; 
+gpsPvt.sigmaLLaM       = zeros(N,3)+NaN;
+gpsPvt.allBcMeters     = zeros(N,1)+NaN;
+gpsPvt.allVelMps       = zeros(N,3)+NaN;
+gpsPvt.sigmaVelMps     = zeros(N,3)+NaN;
+gpsPvt.allBcDotMps     = zeros(N,1)+NaN;
+gpsPvt.numSvs          = zeros(N,1);
+gpsPvt.hdop            = zeros(N,1)+inf;
+gpsPvt.pdop            = zeros(N,1)+inf;
+gpsPvt.tdop            = zeros(N,1)+inf;
+gpsPvt.gdop            = zeros(N,1)+inf;
+
 for i= 1:N
     %找弹的数据的第一组
     iValid = find(isfinite(gnssMeas_BKS.PrM(i,:))); %index into valid svid %这一步没看懂
@@ -107,7 +122,42 @@ for i= 1:N
     
     %extract position states
     llaDegDegM = Xyz2Lla(xo(1:3)');
-    gpsPvt_H.allLlaDegDegM(i,:) = llaDegDegM;
+%     gpsPvt_H.allLlaDegDegM(i,:) = llaDegDegM;
+    gpsPvt.allLlaDegDegM(i,:) = llaDegDegM;
+    %%
+    RE2N = RotEcef2Ned(llaDegDegM(1),llaDegDegM(2));
+    %NOTE: in real-time code compute RE2N once until position changes
+    vNed = RE2N*xo(5:7); %velocity in NED
+    gpsPvt.allVelMps(i,:) = vNed;
+    gpsPvt.allBcDotMps(i) = xo(8);
+    
+    %compute HDOP
+    % 
+    numSvs1=length(prs_BKS(:,1));
+    numSvs2=length(prs_NBKS(:,1));
+    H = [H(:,1:3)*RE2N', ones(numSvs1+numSvs2,1)]; %observation matrix in NED
+    P = inv(H'*H);%unweighted covariance
+    gpsPvt.hdop(i) = sqrt(P(1,1)+P(2,2));
+    gpsPvt.pdop(i)  = sqrt(P(1,1)+P(2,2)+P(3,3));
+    gpsPvt.tdop(i)  = sqrt(P(4,4));
+    gpsPvt.gdop(i)  = sqrt(P(1,1)+P(2,2)+P(3,3)+P(4,4));
+    disp(['GPS HDOP：',num2str(gpsPvt.hdop(i))])
+    disp(['GPS PDOP：',num2str(gpsPvt.pdop(i))])
+    disp(['GPS TDOP：',num2str(gpsPvt.tdop(i))])
+    disp(['GPS GDOP：',num2str(gpsPvt.gdop(i))])
+    
+    %compute variance of llaDegDegM
+    %inside LsPvt the weights are used like this: 
+    %  z = Hx, premultiply by W: Wz = WHx, and solve for x:
+    %  x = pinv(Wpr*H)*Wpr*zPr;
+    %  the point of the weights is to make sigma(Wz) = 1
+    %  therefore, the variances of x come from  diag(inv(H'Wpr'WprH))
+    P = inv(H'*(Wpr'*Wpr)*H); %weighted covariance
+    gpsPvt.sigmaLLaM(i,:) = sqrt(diag(P(1:3,1:3)));
+    
+    %similarly, compute variance of velocity
+    P = inv(H'*(Wrr'*Wrr)*H); %weighted covariance
+    gpsPvt.sigmaVelMps(i,:) = sqrt(diag(P(1:3,1:3)));
 end
 
 % gpsPvt_H.allLlaDegDegM = gpsPvt_H.allLlaDegDegM(find(gpsPvt_H.allLlaDegDegM(:,3) < 60),:);
@@ -115,5 +165,5 @@ end
 
 h5 = figure;
 ts = 'HBKS_Raw Pseudoranges, Weighted Least Squares solution';
-PlotPvt(gpsPvt_H,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+PlotPvt(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
 end
