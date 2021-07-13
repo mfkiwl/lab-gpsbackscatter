@@ -1,9 +1,11 @@
 close all;
 clear all;
 dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+% dirName = 'D:\Filerec\dingding\泛悦城';
 
 prFileName = 'P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
 % prFileName = 'P07_150mV_100mV_Tag2_gnss_log_2021_06_12_19_10_10.txt'; 
+% prFileName = 'gnss_log_2021_07_13_14_06_17.txt'; 
 %% Read GroundTruth from file
 fileID = fopen('groundTruth.txt','r');
 formatSpec = '%d %f %f %f';
@@ -11,6 +13,7 @@ FileGroundTruthLLA = fscanf(fileID,formatSpec,[4 35])';
 GroundTruthLLA = FileGroundTruthLLA(:,2:4);
 % param.llaTrueDegDegM = [30.511739 114.406770 50]; % 设置GroundTruth
 param.llaTrueDegDegM = GroundTruthLLA(2,:);
+% param.llaTrueDegDegM = [];
 %% Filter
 dataFilter = SetDataFilter;
 [gnssRaw,gnssAnalysis] = ReadGnssLogger(dirName,prFileName,dataFilter);
@@ -32,6 +35,10 @@ if isempty(allGpsEph), return, end
 %% Data Seperate
 [gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssMeas,prFileName);
 
+% temp = gnssMeas_BKS;
+% gnssMeas_BKS = gnssMeas_NBKS;
+% gnssMeas_NBKS = temp;
+
 if 0
 %% plot Pvt results
 % Original
@@ -41,6 +48,7 @@ ts = 'Raw Pseudoranges, Weighted Least Squares solution';
 PlotPvt(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
 % h5 = figure;
 % PlotPvtStates(gpsPvt_BKS,prFileName);
+% return
 
 % BKS
 gpsPvt_BKS = GpsWlsPvt(gnssMeas_BKS,allGpsEph); 
