@@ -10,7 +10,6 @@ function  [gnssMeas_BKS, gnssMeas_NBKS]=Seprate(gnssMeas,prFileName)
 StongestSvid = gnssMeas.Svid(Index);
 
 % Index ;
-Index
 gnssCnoMax = gnssMeas.Cn0DbHz(:,Index);
 
 % set the nan as 0
@@ -21,8 +20,8 @@ for i=1:length(gnssCnoMax)
 end
 
 % plot for scale view
-figure;
-plot(gnssCnoMax);
+% figure;
+% plot(gnssCnoMax);
 
 % window length 4
 % split data into two parts
@@ -64,15 +63,16 @@ for i=1:LenGnss
 end
 
 % plot to check seperation
+gnssMeanSep.iBks = find(pickUp == 1);
 gnssMeasSep.Bks = pickUp .* gnssCnoMax';
+gnssMeanSep.iOrg = find(pickDn == 1); 
 gnssMeasSep.Org = pickDn .* gnssCnoMax';
 gnssMeasSep.smooth = smooth(gnssCnoMax, 7);
 figure
-plot(gnssCnoMax);
+plot(gnssCnoMax,'-*','MarkerIndices',gnssMeanSep.iBks,'MarkerEdgeColor','r');
 hold on
-plot(gnssMeasSep.smooth)
-plot(gnssMeasSep.Bks, 'r*');
-plot(gnssMeasSep.Org, 'g*');
+plot(gnssCnoMax,'-*','MarkerIndices',gnssMeanSep.iOrg,'MarkerEdgeColor','g');
+plot(gnssMeasSep.smooth,'c-')
 hold off
 
 
@@ -101,8 +101,7 @@ gnssMeas_NBKS = cell2struct(cellGnssMeas_NBKS, fieldMeas, 1);
 % hold on
 % plot(gnssMeas_BKS.Cn0DbHz(:,1));
 
-figure;
-[colors] = PlotPseudoranges(gnssMeas,prFileName);
-PlotCno(gnssMeas_BKS,prFileName,colors);
+% figure;
+% PlotCno(gnssMeas_BKS,prFileName);
 
 end

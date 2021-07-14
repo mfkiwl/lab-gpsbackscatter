@@ -83,7 +83,8 @@ for i=1:N
     prs = [tRx, svid, prM, prSigmaM, prrMps, prrSigmaMps];
     
     xo(5:7) = zeros(3,1); %initialize speed to zero
-    [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo);%compute WLS solution
+    [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo);%compute WLS solution 
+%     [xHat,~,~,H,Wpr,Wrr] = WlsPvtMirror(prs,gpsEph,xo);%compute WLS solution
     xo = xo + xHat;
     
     %extract position states
