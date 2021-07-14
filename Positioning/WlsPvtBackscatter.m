@@ -48,7 +48,8 @@ end
 %% 
 % TagTrueDegDegM = [30.96827 118.74069 150];%设置中，背向散射节点的位置
 xHat=[]; z=[]; H=[]; svPos=[];
-xyz0 = xo(1:3); %初始坐标位置 tag 的位置
+TagLocXyz0 = xo(1:3); %初始坐标位置 tag 的位置
+xyz0=xo(1:3);%定位初始位置
 % xyz0 = zeros(3,1);
 % bc = xo(4);% 初始钟差
 %% 钟差也要视为两个参数进行考虑
@@ -93,7 +94,7 @@ svXyzTrx_NBKS = svXyzTtx_NBKS; %initialize svXyz at time of reception
 sv_length=length(svXyzTrx_BKS(:,1));
 svXyzTtx_BKS_mirrored=ones(size(svXyzTrx_BKS));
 for i=1: sv_length
-    Temp=mirrorTransform(svXyzTrx_BKS(i,:),xo(1:3)');
+    Temp=mirrorTransform(svXyzTrx_BKS(i,:),TagLocXyz0');
     % disp(['坐标点：',num2str(xo(1:3)),'卫星坐标：',num2str(svXyzTrx_NBKS(i,:)),'映射坐标：',num2str(Temp)]);
     % Coor1=xo(1:3).'
     % CoorSv1=svXyzTrx_NBKS(i,:)
@@ -109,16 +110,21 @@ dtsv=[dtsv_BKS;dtsv_NBKS];
 
 
 %% % % 这里写下伪距差分的公式，上面计算出来的是真实的卫星位置，我们输入groundtruth计算伪距的差分值
-% % %    
-% % groundTruth= [30.96827 118.74069 150];
-% % GroudtruthXyz=Lla2Xyz(groundTruth);
-% % prsTrue=zeros(1,numVal);
-% % for i=1:numVal
-% %     prsTrue(i)=norm(svXyzTtx(i,:)-GroudtruthXyz);
-% % end
-% % % 计算获得了真实伪距，与实际伪距做差进行分析
-% % prsCorr=prs(:,jPr)-prsTrue(i);
-% % prs(:,jPr)=prsTrue;
+% % %      1.伪距分析
+% TagLocXyz0'% Tag位置
+% % svXyzTtx_NBKS % 卫星位置
+% % 针对弹过的信号
+% TrueDistance_BKS=ones(sv_length,1);
+% for i= 1:sv_length
+% TrueDistance_BKS(i)= norm(svXyzTtx_BKS(i,:)- TagLocXyz0');
+% end
+% prsCorr_BKS = prs_BKS(:,jPr)-TrueDistance_BKS;
+% figure;
+% plot(prsCorr_BKS);
+%
+%          2. 伪距/位置差分
+% 校正
+% prs_BKS(:,jPr)=prs_BKS(:,jPr)-prsCorr_BKS;
 %% 
 
 %  svXyzTrx=[svXyzTrx_BKS_mirrored;svXyzTrx_NBKS];

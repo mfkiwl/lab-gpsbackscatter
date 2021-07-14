@@ -96,6 +96,8 @@ gpsPvt.hdop            = zeros(N,1)+inf;
 gpsPvt.pdop            = zeros(N,1)+inf;
 gpsPvt.tdop            = zeros(N,1)+inf;
 gpsPvt.gdop            = zeros(N,1)+inf;
+%%  伪距鱼真实位置分析
+
 
 for i= 1:N
     %找弹的数据的第一组
