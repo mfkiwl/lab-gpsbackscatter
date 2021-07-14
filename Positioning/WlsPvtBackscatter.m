@@ -30,7 +30,7 @@ function [xHat,z,svPos,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph_BK
 %Open Source code for processing Android GNSS Measurements
 
 jWk=1; jSec=2; jSv=3; jPr=4; jPrSig=5; jPrr=6; jPrrSig=7;%index of columns
-
+%   load ToF_deltaSeconds.mat; %%加入ToF校准值
 % Check Input
 [bOk,numVal_BKS] = checkInputs(prs_BKS, gpsEph_BKS, xo);
 if ~bOk
@@ -212,7 +212,9 @@ v_NBKS = v_NBKS./(ones(3,1)*range_NBKS); % line of sight unit vectors from sv to
   xHat=xHat+dx;
   xyz0=xyz0(:)+dx(1:3);
   
-  bc_BKS=bc_BKS+dx(4);
+%% 钟差校准
+  bc_BKS=bc_BKS+dx(4)
+%   bc_BKS=bc_BKS+dx(4)-ToF_deltaSeconds(i);
   bc_NBKS=bc_NBKS+dx(5);
   %Now calculate the a-posteriori range residual
   zPr = zPr-H*dx;

@@ -1,12 +1,14 @@
 close all;
 clear all;
 dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
-
+%% 通过这组数据分析伪距的变化率 （尝试估算Tag到卫星之间的距离）
 % prFileName = 'P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
-% gnss_log_2021_07_13_13_56_37.txt
+% prFileName = 'P35_150mV_100mV_Tag2_gnss_log_2021_06_14_16_54_20.txt'; 
+ prFileName = 'P22_150mV_100mV_Tag2_gnss_log_2021_06_13_20_39_21.txt'; 
+% P22_150mV_100mV_Tag2_gnss_log_2021_06_13_20_39_21.txt
 % prFileName = 'gnss_log_2021_07_13_13_56_37.txt'; 
 % prFileName = 'P03_150mV_100mV_Tag2_gnss_log_2021_06_12_18_01_51.txt'; 
-prFileName = 'P04_150mV_100mV_Tag2_gnss_log_2021_06_12_18_35_51.txt'; 
+% prFileName = 'P04_150mV_100mV_Tag2_gnss_log_2021_06_12_18_35_51.txt'; 
 % prFileName = 'P07_150mV_100mV_Tag2_gnss_log_2021_06_12_19_10_10.txt'; 
 %% Read GroundTruth from file
 fileID = fopen('groundTruth.txt','r');
