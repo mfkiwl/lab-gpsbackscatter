@@ -1,14 +1,16 @@
-function PlotPvt(gpsPvt,prFileName,llaTrueDegDegM,titleString)
-%PlotGpsPvt(gpsPvt,prFileName,[llaTrueDegDegM],[titleString])
+function PlotPvtBackscatter(gpsPvt,prFileName,llaTrueDegDegM,titleString)
+%PlotGpsPvtBackscatter(gpsPvt,prFileName,[llaTrueDegDegM],[titleString])
 %Plot the results of GpsLsPvt:
 %
 % gpsPvt.FctSeconds    Nx1 time vector, same as gpsMeas.FctSeconds
 %       .allLlaDegDegM Nx3 matrix, (i,:) = [lat (deg), lon (deg), alt (m)]
 %       .sigmaLlaM     Nx3 standard deviation of [lat,lon,alt] (m)
 %       .allBcMeters   Nx1 common bias computed with lla
+%       .allBcMeters_BKS   Nx1 common bias computed with lla Backscattered
+%       .allBcMeters_NBKS   No  Backscattered
 %       .allVelMps     Nx3 (i,:) = velocity in NED coords
 %       .sigmaVelMps   Nx3 standard deviation of velocity (m/s)
-%       .allBcDotMps   Nx1 common freq bias computed with velocity
+%       .allBcDotMps_BKS /NBKS   Nx1 common freq bias computed with velocity
 %       .numSvs        Nx1 number of satellites used in corresponding lla
 %       .hdop          Nx1 hdop of corresponding fix
 %

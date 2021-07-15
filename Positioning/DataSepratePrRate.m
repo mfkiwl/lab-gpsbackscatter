@@ -1,26 +1,22 @@
 close all;
 clear all;
-
 dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
-
-% dirName = 'D:\Filerec\dingding\泛悦城';
-
+%% 通过这组数据分析伪距的变化率 （尝试估算Tag到卫星之间的距离）
 % prFileName = 'P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
-% gnss_log_2021_07_13_13_56_37.txt
+% prFileName = 'P35_150mV_100mV_Tag2_gnss_log_2021_06_14_16_54_20.txt'; 
+%  prFileName = 'P22_150mV_100mV_Tag2_gnss_log_2021_06_13_20_39_21.txt'; 
+% P22_150mV_100mV_Tag2_gnss_log_2021_06_13_20_39_21.txt
 % prFileName = 'gnss_log_2021_07_13_13_56_37.txt'; 
 % prFileName = 'P03_150mV_100mV_Tag2_gnss_log_2021_06_12_18_01_51.txt'; 
 prFileName = 'P04_150mV_100mV_Tag2_gnss_log_2021_06_12_18_35_51.txt'; 
 % prFileName = 'P07_150mV_100mV_Tag2_gnss_log_2021_06_12_19_10_10.txt'; 
-% prFileName = 'gnss_log_2021_07_13_14_06_17.txt'; 
 %% Read GroundTruth from file
 fileID = fopen('groundTruth.txt','r');
 formatSpec = '%d %f %f %f';
 FileGroundTruthLLA = fscanf(fileID,formatSpec,[4 35])';
 GroundTruthLLA = FileGroundTruthLLA(:,2:4);
 % param.llaTrueDegDegM = [30.511739 114.406770 50]; % 设置GroundTruth
-
 param.llaTrueDegDegM = GroundTruthLLA(4,:);
-
 %% Filter
 dataFilter = SetDataFilter;
 [gnssRaw,gnssAnalysis] = ReadGnssLogger(dirName,prFileName,dataFilter);
@@ -43,37 +39,32 @@ if isempty(allGpsEph), return, end
 % [gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssMeas,prFileName);
 [gnssMeas_NBKS, gnssMeas_BKS] = Seprate(gnssMeas,prFileName);%位置反转
 
-% temp = gnssMeas_BKS;
-% gnssMeas_BKS = gnssMeas_NBKS;
-% gnssMeas_NBKS = temp;
-
-if 0
-%% plot Pvt results
-% Original
-gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph); 
-h4 = figure;
-ts = 'Raw Pseudoranges, Weighted Least Squares solution';
-PlotPvt(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
-% h5 = figure;
-% PlotPvtStates(gpsPvt_BKS,prFileName);
-% return
-
-% BKS
-gpsPvt_BKS = GpsWlsPvt(gnssMeas_BKS,allGpsEph); 
-h4 = figure;
-ts = 'BKS_Raw Pseudoranges, Weighted Least Squares solution';
-PlotPvt(gpsPvt_BKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
-% h5 = figure;
-% PlotPvtStates(gpsPvt_BKS,prFileName);
-
-% NBKS
-gpsPvt_NBKS = GpsWlsPvt(gnssMeas_NBKS,allGpsEph); 
-h4 = figure;
-ts = 'NBKS_Raw Pseudoranges, Weighted Least Squares solution';
-PlotPvt(gpsPvt_NBKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
-% h5 = figure;
-% PlotPvtStates(gpsPvt_NBKS,prFileName);
-end
+% % % % % if 0
+% % % % % %% plot Pvt results
+% % % % % % Original
+% % % % % gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph); 
+% % % % % h4 = figure;
+% % % % % ts = 'Raw Pseudoranges, Weighted Least Squares solution';
+% % % % % PlotPvt(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+% % % % % % h5 = figure;
+% % % % % % PlotPvtStates(gpsPvt_BKS,prFileName);
+% % % % % 
+% % % % % % BKS
+% % % % % gpsPvt_BKS = GpsWlsPvt(gnssMeas_BKS,allGpsEph); 
+% % % % % h4 = figure;
+% % % % % ts = 'BKS_Raw Pseudoranges, Weighted Least Squares solution';
+% % % % % PlotPvt(gpsPvt_BKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+% % % % % % h5 = figure;
+% % % % % % PlotPvtStates(gpsPvt_BKS,prFileName);
+% % % % % 
+% % % % % % NBKS
+% % % % % gpsPvt_NBKS = GpsWlsPvt(gnssMeas_NBKS,allGpsEph); 
+% % % % % h4 = figure;
+% % % % % ts = 'NBKS_Raw Pseudoranges, Weighted Least Squares solution';
+% % % % % PlotPvt(gpsPvt_NBKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+% % % % % % h5 = figure;
+% % % % % % PlotPvtStates(gpsPvt_NBKS,prFileName);
+% % % % % end
 
 %%
 if 1
@@ -105,7 +96,9 @@ gpsPvt.hdop            = zeros(N,1)+inf;
 gpsPvt.pdop            = zeros(N,1)+inf;
 gpsPvt.tdop            = zeros(N,1)+inf;
 gpsPvt.gdop            = zeros(N,1)+inf;
+%%  伪距与真实位置分析
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for i= 1:N
     %找弹的数据的第一组
     iValid = find(isfinite(gnssMeas_BKS.PrM(i,:))); %index into valid svid %这一步没看懂
