@@ -1,8 +1,8 @@
-function  [gnssMeas_BKS, gnssMeas_NBKS]=Seprate(gnssMeas,prFileName)
-% figure;
-% [colors] = PlotPseudoranges(gnssMeas,prFileName);
-% figure;
-% PlotCno(gnssMeas,prFileName,colors);
+function  [gnssMeas_BKS, gnssMeas_NBKS]=Seprate(gnssMeas,prFileName,draw)
+
+if nargin <3
+    draw = 1;
+end
 
 % pick out the strongest sat signal as standard
 [strongestSig,SigIndex] = max(gnssMeas.Cn0DbHz);
@@ -68,13 +68,14 @@ gnssMeasSep.Bks = pickUp .* gnssCnoMax';
 gnssMeanSep.iOrg = find(pickDn == 1); 
 gnssMeasSep.Org = pickDn .* gnssCnoMax';
 gnssMeasSep.smooth = smooth(gnssCnoMax, 7);
-figure
-plot(gnssCnoMax,'-*','MarkerIndices',gnssMeanSep.iBks,'MarkerEdgeColor','r');
-hold on
-plot(gnssCnoMax,'-*','MarkerIndices',gnssMeanSep.iOrg,'MarkerEdgeColor','g');
-plot(gnssMeasSep.smooth,'c-')
-hold off
-
+if draw
+    figure
+    plot(gnssCnoMax,'-*','MarkerIndices',gnssMeanSep.iBks,'MarkerEdgeColor','r');
+    hold on
+    plot(gnssCnoMax,'-*','MarkerIndices',gnssMeanSep.iOrg,'MarkerEdgeColor','g');
+    plot(gnssMeasSep.smooth,'c-')
+    hold off
+end
 
 
 % Seperate BKS and NBKS 
