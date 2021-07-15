@@ -39,32 +39,32 @@ if isempty(allGpsEph), return, end
 % [gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssMeas,prFileName);
 [gnssMeas_NBKS, gnssMeas_BKS] = Seprate(gnssMeas,prFileName);%位置反转
 
-if 0
-%% plot Pvt results
-% Original
-gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph); 
-h4 = figure;
-ts = 'Raw Pseudoranges, Weighted Least Squares solution';
-PlotPvt(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
-% h5 = figure;
-% PlotPvtStates(gpsPvt_BKS,prFileName);
-
-% BKS
-gpsPvt_BKS = GpsWlsPvt(gnssMeas_BKS,allGpsEph); 
-h4 = figure;
-ts = 'BKS_Raw Pseudoranges, Weighted Least Squares solution';
-PlotPvt(gpsPvt_BKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
-% h5 = figure;
-% PlotPvtStates(gpsPvt_BKS,prFileName);
-
-% NBKS
-gpsPvt_NBKS = GpsWlsPvt(gnssMeas_NBKS,allGpsEph); 
-h4 = figure;
-ts = 'NBKS_Raw Pseudoranges, Weighted Least Squares solution';
-PlotPvt(gpsPvt_NBKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
-% h5 = figure;
-% PlotPvtStates(gpsPvt_NBKS,prFileName);
-end
+% % % % % if 0
+% % % % % %% plot Pvt results
+% % % % % % Original
+% % % % % gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph); 
+% % % % % h4 = figure;
+% % % % % ts = 'Raw Pseudoranges, Weighted Least Squares solution';
+% % % % % PlotPvt(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+% % % % % % h5 = figure;
+% % % % % % PlotPvtStates(gpsPvt_BKS,prFileName);
+% % % % % 
+% % % % % % BKS
+% % % % % gpsPvt_BKS = GpsWlsPvt(gnssMeas_BKS,allGpsEph); 
+% % % % % h4 = figure;
+% % % % % ts = 'BKS_Raw Pseudoranges, Weighted Least Squares solution';
+% % % % % PlotPvt(gpsPvt_BKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+% % % % % % h5 = figure;
+% % % % % % PlotPvtStates(gpsPvt_BKS,prFileName);
+% % % % % 
+% % % % % % NBKS
+% % % % % gpsPvt_NBKS = GpsWlsPvt(gnssMeas_NBKS,allGpsEph); 
+% % % % % h4 = figure;
+% % % % % ts = 'NBKS_Raw Pseudoranges, Weighted Least Squares solution';
+% % % % % PlotPvt(gpsPvt_NBKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+% % % % % % h5 = figure;
+% % % % % % PlotPvtStates(gpsPvt_NBKS,prFileName);
+% % % % % end
 
 %%
 if 1
@@ -96,9 +96,9 @@ gpsPvt.hdop            = zeros(N,1)+inf;
 gpsPvt.pdop            = zeros(N,1)+inf;
 gpsPvt.tdop            = zeros(N,1)+inf;
 gpsPvt.gdop            = zeros(N,1)+inf;
-%%  伪距鱼真实位置分析
+%%  伪距与真实位置分析
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for i= 1:N
     %找弹的数据的第一组
     iValid = find(isfinite(gnssMeas_BKS.PrM(i,:))); %index into valid svid %这一步没看懂
