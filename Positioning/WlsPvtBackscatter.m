@@ -141,7 +141,7 @@ dx=xHat+inf;
 whileCount=0; maxWhileCount=100; 
 %we expect the while loop to converge in < 10 iterations, even with initial
 %position on other side of the Earth (see Stanford course AA272C "Intro to GPS")
-while norm(dx) > GnssThresholds.MAXDELPOSFORNAVM  % 20 m
+while norm(dx) > GnssThresholds.MAXPRRUNCMPS % 10 % MAXDELPOSFORNAVM  % 20 m
     whileCount=whileCount+1;
     assert(whileCount < maxWhileCount,...
         'while loop did not converge after %d iterations',whileCount);
@@ -217,9 +217,9 @@ v_NBKS = v_NBKS./(ones(3,1)*range_NBKS); % line of sight unit vectors from sv to
   % update xo, xhat and bc
   xHat=xHat+dx;
   xyz0=xyz0(:)+dx(1:3);
-  
+
 %% 钟差校准
-  bc_BKS=bc_BKS+dx(4)
+  bc_BKS=bc_BKS+dx(4);
 %   bc_BKS=bc_BKS+dx(4)-ToF_deltaSeconds(i);
   bc_NBKS=bc_NBKS+dx(5);
   %Now calculate the a-posteriori range residual
@@ -231,6 +231,39 @@ v_NBKS = v_NBKS./(ones(3,1)*range_NBKS); % line of sight unit vectors from sv to
   stringPos=[' Position: ',num2str(lla0(1)),',',num2str(lla0(2)),',',num2str(lla0(3))];
   disp(stringPos)
 %   param.llaTrueDegDegM = [30.511739 114.406770 50];
+%%   %% 滤波处理，对于Tag覆盖不到的点进行消除
+% 暂时行不通
+%     distance=norm(TagLocXyz0'-xyz0);
+% if norm(dx) < GnssThresholds.MAXDELPOSFORNAVM
+%     if distance < 30
+%         break;
+%     else
+% %         xyz0=TagLocXyz0'- dx(1:3);
+% %     xyz0=TagLocXyz0';
+% %       xHat(1:3)=dx(1:3);
+%         continue;
+%     end
+% end
+% 滤波与dx重新赋值，让dx从当前位置往Tag位置位移一个单位长度
+% 
+distance=norm(TagLocXyz0'-xyz0);
+if norm(dx) < GnssThresholds.MAXPRRUNCMPS  % MAXDELPOSFORNAVM 
+    if distance < 30
+        break;
+    else
+%         xyz0=TagLocXyz0'- dx(1:3);
+%     xyz0=TagLocXyz0';
+%       xHat(1:3)=dx(1:3);
+     correctionVector=(TagLocXyz0-xyz0);%  ./norm(TagLocXyz0'-xyz0);
+     dx(1:3)=correctionVector./10;
+      xHat=xHat+dx;
+      xyz0=xyz0(:)+dx(1:3);
+      stringPos=[' Position: ',num2str(lla0(1)),',',num2str(lla0(2)),',',num2str(lla0(3))];
+     disp(stringPos)
+%         continue;
+    end
+end
+% correctionVector=(TagLocXyz0'-xyz0)./norm(TagLocXyz0'-xyz0);
 end
 %% 速度部分计算
 % % Compute velocities ---------------------------------------------------------
