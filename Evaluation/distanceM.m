@@ -1,6 +1,6 @@
 function [distM] = distanceM(allLlaDegDegM,llaTrueDegDegM)
-%DISTANCE 此处显示有关此函数的摘要
-%   此处显示详细说明
+%DISTANCE 计算各个经纬度点到某点的平面距离
+%   lla 坐标系 转 参考点为中心的 ned 坐标系算距离
 
 nedM = Lla2Ned(allLlaDegDegM,llaTrueDegDegM);
 iFi = isfinite(allLlaDegDegM(:,1));

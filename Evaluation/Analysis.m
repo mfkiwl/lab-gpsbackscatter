@@ -1,12 +1,12 @@
 function [ AnalysisData ]=Analysis(FileName)
 % AnalysisData: 3 x 9
+Ntype  = 3;
+Nvalue = 9;
 
 load(FileName,'distance');
 % Point Num Aver Median Std Max Min CI_Upper CI_lower
 jIndex = {1 2 3 4 5 6 7 8 9 10 11};
 [jPoint, jNum, jAver, jMed, jStd, jMax, jMin, jCI_Upper, jCI_lower] = jIndex{:};
-Ntype  = 3;
-Nvalue = 9;
 
 AnalysisData = zeros(Ntype,Nvalue);
 
