@@ -95,22 +95,20 @@ speedMps = zeros(1,N)+NaN;
 speedMps(iGood) = sqrt(sum(gpsPvt.allVelMps(iGood,1:2)'.^2)); %horizontal speed
 plot(tSeconds,speedMps);grid on
 ylabel('Horiz. speed (m/s)')
-% 
-% %% plot hdop & # sats
-%这部分绘图有问题
-% h123(3)=subplot(4,1,4);
-% [hyy,h1]=plotyy(tSeconds,gpsPvt.hdop,tSeconds,gpsPvt.numSvs,'plot','stairs');
-% grid on
-% set(h1,'LineWidth',1)
-% ylabel(hyy(1),'HDOP'); ylabel(hyy(2),'# sats'); 
-% xs = sprintf('time(seconds)\n%s',prFileName);
-% xlabel(xs,'Interpreter','none')
-% 
-% set(hyy,'Box','off')
-% 
-% linkaxes(h123(2:3),'x');
-% linkaxes(hyy,'x')
 
+%% plot hdop & # sats
+h123(3)=subplot(4,1,4);
+[hyy,h1]=plotyy(tSeconds,gpsPvt.hdop,tSeconds,gpsPvt.numSvs,'plot','stairs');
+grid on
+set(h1,'LineWidth',1)
+ylabel(hyy(1),'HDOP'); ylabel(hyy(2),'# sats'); 
+xs = sprintf('time(seconds)\n%s',prFileName);
+xlabel(xs,'Interpreter','none')
+
+set(hyy,'Box','off')
+
+linkaxes(h123(2:3),'x');
+linkaxes(hyy,'x')
 
 end %end of function PlotPvt
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

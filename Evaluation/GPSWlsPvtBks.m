@@ -42,36 +42,6 @@ if isempty(allGpsEph), return, end
 % [gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssMeas,prFileName);
 [gnssMeas_NBKS, gnssMeas_BKS] = Seprate(gnssMeas,prFileName,0);%位置反转
 
-if 0
-%% plot Pvt results
-% Original
-gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph); 
-h4 = figure;
-ts = 'Raw Pseudoranges, Weighted Least Squares solution';
-PlotPvt(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
-% h5 = figure;
-% PlotPvtStates(gpsPvt_BKS,prFileName);
-% return
-
-% BKS
-gpsPvt_BKS = GpsWlsPvt(gnssMeas_BKS,allGpsEph); 
-h4 = figure;
-ts = 'BKS_Raw Pseudoranges, Weighted Least Squares solution';
-PlotPvt(gpsPvt_BKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
-% h5 = figure;
-% PlotPvtStates(gpsPvt_BKS,prFileName);
-
-% NBKS
-gpsPvt_NBKS = GpsWlsPvt(gnssMeas_NBKS,allGpsEph); 
-h4 = figure;
-ts = 'NBKS_Raw Pseudoranges, Weighted Least Squares solution';
-PlotPvt(gpsPvt_NBKS,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
-% h5 = figure;
-% PlotPvtStates(gpsPvt_NBKS,prFileName);
-end
-
-%%
-if 1
 % 根据当前时刻的卫星位置判断出未来卫星位置
 N1 = length(gnssMeas_BKS.FctSeconds);
 N2 = length(gnssMeas_NBKS.FctSeconds);
@@ -179,56 +149,4 @@ for i= 1:N
     %similarly, compute variance of velocity
     P = inv(H'*(Wrr'*Wrr)*H); %weighted covariance
     gpsPvt.sigmaVelMps(i,:) = sqrt(diag(P(1:3,1:3)));
-end
-
-%% 位置打点
-% gpsPvt_H.allLlaDegDegM = gpsPvt_H.allLlaDegDegM(find(gpsPvt_H.allLlaDegDegM(:,3) < 60),:);
-% gpsPvt_H.allLlaDegDegM = gpsPvt_H.allLlaDegDegM(find(gpsPvt_H.allLlaDegDegM(:,3) > 30),:);
-h5 = figure;
-ts = 'HBKS_Raw Pseudoranges, Weighted Least Squares solution';
-PlotPvtBackscatter(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
-%% bc1-bc2
-% allBcMeters   Nx1 common bias computed with llaDegDegM
-% allBcDotMps   Nx1 common freq bias computed with velocity
-Bc_delta= gpsPvt.allBcMeters_BKS-gpsPvt.allBcMeters_NBKS;
-BcV_delta=gpsPvt.allBcDotMps_BKS-gpsPvt.allBcDotMps_NBKS;
-
-% 
-gpsPvt.FctSeconds      = 1:length(gpsPvt.numSvs);%FctSeconds缩短了
-bc_Rate = polyfit(gpsPvt.FctSeconds,Bc_delta,1)./2;
-ToF_deltaMeters=Bc_delta./(-2.*bc_Rate(:,1));
-ToF_deltaSeconds=ToF_deltaMeters./GpsConstants.LIGHTSPEED;
-
-% 3D distance
-groundTruth=Lla2Xyz(param.llaTrueDegDegM);
-distanceVector=gpsPvt.allXyzM-ones(N,1)*groundTruth;
-distance=ones(N,1);
-for i=1:N
-    distance(i)=norm(distanceVector(i,:));
-end
-
-figure;
-hold on
-plot(Bc_delta);
-plot(BcV_delta);
-title('Clock Bias delta * LightSpeed in Meters'),ylabel('(Meters)')
-xs = sprintf('time (seconds)\n%s',prFileName);
-xlabel(xs,'Interpreter','none')
-
-figure;
-hold on
-plot(gpsPvt.allBcMeters_BKS/GpsConstants.LIGHTSPEED);
-plot(gpsPvt.allBcMeters_NBKS/GpsConstants.LIGHTSPEED);
-title('Clock Bias '),ylabel('(Meters)')
-xs = sprintf('time (seconds)\n%s',prFileName);
-xlabel(xs,'Interpreter','none')
-% title(prFileName);
-hold off
-
-% figure;
-% plot(distance);
-% title('3D Positioning error in Meters'),ylabel('(Meters)')
-% xs = sprintf('time (seconds)\n%s',prFileName);
-% xlabel(xs,'Interpreter','none')
-
 end
