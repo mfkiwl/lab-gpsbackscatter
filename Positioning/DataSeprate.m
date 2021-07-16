@@ -31,6 +31,8 @@ allGpsEph = GetNasaHourlyEphemeris(utcTime,dirName);
 if isempty(allGpsEph), return, end
 %% 
 [gnssMeas] = ProcessGnssMeas(gnssRaw);
+% Satlite filter
+gnssMeasFilter = SatFilter(gnssMeas,4,1);
 % %% plot pseudoranges and pseudorange rates
 % h1 = figure;
 % [colors] = PlotPseudoranges(gnssMeas,prFileName);
