@@ -103,7 +103,7 @@ for i=1:N
     H = [H(:,1:3)*RE2N', ones(numSvs,1)]; %observation matrix in NED
     P = inv(H'*H);%unweighted covariance
     gpsPvt.hdop(i) = sqrt(P(1,1)+P(2,2));
-    
+
     %compute variance of llaDegDegM
     %inside LsPvt the weights are used like this: 
     %  z = Hx, premultiply by W: Wz = WHx, and solve for x:

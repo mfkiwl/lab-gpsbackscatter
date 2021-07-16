@@ -1,14 +1,16 @@
-function PlotPvt(gpsPvt,prFileName,llaTrueDegDegM,titleString)
-%PlotGpsPvt(gpsPvt,prFileName,[llaTrueDegDegM],[titleString])
+function PlotPvtBackscatter(gpsPvt,prFileName,llaTrueDegDegM,titleString)
+%PlotGpsPvtBackscatter(gpsPvt,prFileName,[llaTrueDegDegM],[titleString])
 %Plot the results of GpsLsPvt:
 %
 % gpsPvt.FctSeconds    Nx1 time vector, same as gpsMeas.FctSeconds
 %       .allLlaDegDegM Nx3 matrix, (i,:) = [lat (deg), lon (deg), alt (m)]
 %       .sigmaLlaM     Nx3 standard deviation of [lat,lon,alt] (m)
 %       .allBcMeters   Nx1 common bias computed with lla
+%       .allBcMeters_BKS   Nx1 common bias computed with lla Backscattered
+%       .allBcMeters_NBKS   No  Backscattered
 %       .allVelMps     Nx3 (i,:) = velocity in NED coords
 %       .sigmaVelMps   Nx3 standard deviation of velocity (m/s)
-%       .allBcDotMps   Nx1 common freq bias computed with velocity
+%       .allBcDotMps_BKS /NBKS   Nx1 common freq bias computed with velocity
 %       .numSvs        Nx1 number of satellites used in corresponding lla
 %       .hdop          Nx1 hdop of corresponding fix
 %
@@ -95,20 +97,22 @@ speedMps = zeros(1,N)+NaN;
 speedMps(iGood) = sqrt(sum(gpsPvt.allVelMps(iGood,1:2)'.^2)); %horizontal speed
 plot(tSeconds,speedMps);grid on
 ylabel('Horiz. speed (m/s)')
+% 
+% %% plot hdop & # sats
+%这部分绘图有问题
+% h123(3)=subplot(4,1,4);
+% [hyy,h1]=plotyy(tSeconds,gpsPvt.hdop,tSeconds,gpsPvt.numSvs,'plot','stairs');
+% grid on
+% set(h1,'LineWidth',1)
+% ylabel(hyy(1),'HDOP'); ylabel(hyy(2),'# sats'); 
+% xs = sprintf('time(seconds)\n%s',prFileName);
+% xlabel(xs,'Interpreter','none')
+% 
+% set(hyy,'Box','off')
+% 
+% linkaxes(h123(2:3),'x');
+% linkaxes(hyy,'x')
 
-%% plot hdop & # sats
-h123(3)=subplot(4,1,4);
-[hyy,h1]=plotyy(tSeconds,gpsPvt.hdop,tSeconds,gpsPvt.numSvs,'plot','stairs');
-grid on
-set(h1,'LineWidth',1)
-ylabel(hyy(1),'HDOP'); ylabel(hyy(2),'# sats'); 
-xs = sprintf('time(seconds)\n%s',prFileName);
-xlabel(xs,'Interpreter','none')
-
-set(hyy,'Box','off')
-
-linkaxes(h123(2:3),'x');
-linkaxes(hyy,'x')
 
 end %end of function PlotPvt
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
