@@ -82,13 +82,15 @@ for iFile = 1:Nfile
     [gnssMeas] = ProcessGnssMeas(gnssRaw);
     % Data Seperate
     [gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssMeas,prFileName,0);
-    % plot Pvt results
+
+ 
     % Original
     gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph); 
     % Distance
     distance.org = distanceM(gpsPvt.allLlaDegDegM,param.llaTrueDegDegM);
     if isempty(distance.org),  continue, end    
     
+% if 0       
     % BKS
     gpsPvt_BKS = GpsWlsPvt(gnssMeas_BKS,allGpsEph); 
     % Distance
@@ -98,11 +100,15 @@ for iFile = 1:Nfile
     gpsPvt_NBKS = GpsWlsPvt(gnssMeas_NBKS,allGpsEph);
     % Distance
     distance.nbks = distanceM(gpsPvt_NBKS.allLlaDegDegM,param.llaTrueDegDegM);
-
+% end
     % Hbrid
     gpsPvt_H = GPSWlsPvtBks(gnssMeas,gnssMeas_BKS,gnssMeas_NBKS,allGpsEph,param.llaTrueDegDegM);
     % Distance
     distance.h = distanceM(gpsPvt_H.allLlaDegDegM,param.llaTrueDegDegM);
+    h5 = figure;
+    ts = 'HBKS_Raw Pseudoranges, Weighted Least Squares solution';
+    PlotPvtBackscatter(gpsPvt_H,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+%     continue    
     
     % save
     if ilastPoint == iPoint
