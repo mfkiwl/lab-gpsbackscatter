@@ -222,12 +222,12 @@ while norm(dx) > GnssThresholds.MAXPRRUNCMPS % 10 % MAXDELPOSFORNAVM  % 20 m
   %Now calculate the a-posteriori range residual
   zPr = zPr-H*dx;
   
-  % display info
-  string=['whileCount = ',num2str(whileCount),', norm(dx) =',num2str(norm(dx))];
-  disp(string)
-  lla0=Xyz2Lla(xyz0(:)');
-  stringPos=[' Position: ',num2str(lla0(1)),',',num2str(lla0(2)),',',num2str(lla0(3))];
-  disp(stringPos)
+%   % display info
+%   string=['whileCount = ',num2str(whileCount),', norm(dx) =',num2str(norm(dx))];
+%   disp(string)
+%   lla0=Xyz2Lla(xyz0(:)');
+%   stringPos=[' Position: ',num2str(lla0(1)),',',num2str(lla0(2)),',',num2str(lla0(3))];
+%   disp(stringPos)
   
 %%  滤波处理，对于Tag覆盖不到的点进行消除
 % 暂时行不通
@@ -244,24 +244,24 @@ while norm(dx) > GnssThresholds.MAXPRRUNCMPS % 10 % MAXDELPOSFORNAVM  % 20 m
 % end
 
 % 滤波与dx重新赋值，让dx从当前位置往Tag位置位移一个单位长度
-    distance=norm(TagLocXyz0'-xyz0);
-    if norm(dx) < GnssThresholds.MAXPRRUNCMPS  % MAXDELPOSFORNAVM 
-        if distance < 30
-            break;
-        else
-%         xyz0=TagLocXyz0'- dx(1:3);
-%     xyz0=TagLocXyz0';
-%       xHat(1:3)=dx(1:3);
-            correctionVector=(TagLocXyz0-xyz0);%  ./norm(TagLocXyz0'-xyz0);
-            dx(1:3)=correctionVector./10;
-            xHat=xHat+dx;
-            xyz0=xyz0(:)+dx(1:3);
-
-            stringPos=[' Position: ',num2str(lla0(1)),',',num2str(lla0(2)),',',num2str(lla0(3))];
-            disp(stringPos)
-%         continue;
-        end
-    end
+%     distance=norm(TagLocXyz0'-xyz0);
+%     if norm(dx) < GnssThresholds.MAXPRRUNCMPS  % MAXDELPOSFORNAVM 
+%         if distance < 30
+%             break;
+%         else
+% %         xyz0=TagLocXyz0'- dx(1:3);
+% %     xyz0=TagLocXyz0';
+% %       xHat(1:3)=dx(1:3);
+%             correctionVector=(TagLocXyz0-xyz0);%  ./norm(TagLocXyz0'-xyz0);
+%             dx(1:3)=correctionVector./10;
+%             xHat=xHat+dx;
+%             xyz0=xyz0(:)+dx(1:3);
+% 
+%             stringPos=[' Position: ',num2str(lla0(1)),',',num2str(lla0(2)),',',num2str(lla0(3))];
+%             disp(stringPos)
+% %         continue;
+%         end
+%     end
 % correctionVector=(TagLocXyz0'-xyz0)./norm(TagLocXyz0'-xyz0);
 end
 %% 速度部分计算

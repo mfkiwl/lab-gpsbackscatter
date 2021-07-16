@@ -1,6 +1,6 @@
 function [ AnalysisData ]=Analysis(FileName)
 % AnalysisData: 3 x 9
-Ntype  = 3;
+Ntype  = 4;
 Nvalue = 9;
 
 load(FileName,'distance');
@@ -11,7 +11,7 @@ jIndex = {1 2 3 4 5 6 7 8 9 10 11};
 AnalysisData = zeros(Ntype,Nvalue);
 
 a = strsplit(FileName,'_');
-AnalysisData(:,jPoint) = ones(3,1) * str2double(a{1}(isstrprop(a{1},'digit')));
+AnalysisData(:,jPoint) = ones(Ntype,1) * str2double(a{1}(isstrprop(a{1},'digit')));
 
 % filter
 distance = disFilter(distance); 
@@ -23,6 +23,7 @@ end
 AnalysisData(1,jNum:jMin) = ExtractDis(distance.org);
 AnalysisData(2,jNum:jMin) = ExtractDis(distance.bks);
 AnalysisData(3,jNum:jMin) = ExtractDis(distance.nbks);
+AnalysisData(4,jNum:jMin) = ExtractDis(distance.h);
 
 SEM = AnalysisData(:,jStd) ./ sqrt(AnalysisData(:,jNum));            % Standard Error
 ts = 1.96;  % 95%
@@ -34,6 +35,7 @@ function disFiltered = disFilter(distance)
 disFiltered.org = distance.org(find(distance.org < 30));
 disFiltered.bks = distance.bks(find(distance.bks < 30));
 disFiltered.nbks = distance.nbks(find(distance.nbks < 30));
+disFiltered.h = distance.h(find(distance.h < 30));
 end
 
 function [AnalysisData] = ExtractDis(distance)

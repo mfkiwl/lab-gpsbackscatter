@@ -1,5 +1,5 @@
 close all;
-clear all;
+clear 
 dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
 
 FileTable = [
@@ -99,6 +99,11 @@ for iFile = 1:Nfile
     % Distance
     distance.nbks = distanceM(gpsPvt_NBKS.allLlaDegDegM,param.llaTrueDegDegM);
 
+    % Hbrid
+    gpsPvt_H = GPSWlsPvtBks(gnssMeas,gnssMeas_BKS,gnssMeas_NBKS,allGpsEph,param.llaTrueDegDegM);
+    % Distance
+    distance.h = distanceM(gpsPvt_H.allLlaDegDegM,param.llaTrueDegDegM);
+    
     % save
     if ilastPoint == iPoint
         id = id + 1;
