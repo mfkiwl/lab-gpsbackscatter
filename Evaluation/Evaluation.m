@@ -1,6 +1,6 @@
 close all;
 clear 
-dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+SourceDirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
 
 FileTable = [
 'P01_150mV_100mV_Tag2_gnss_log_2021_06_12_17_13_53.txt';
@@ -10,7 +10,7 @@ FileTable = [
 'P04_150mV_100mV_Tag2_gnss_log_2021_06_12_18_35_51.txt';
 'P05_150mV_100mV_Tag2_gnss_log_2021_06_12_18_46_52.txt';
 'P06_150mV_100mV_Tag2_gnss_log_2021_06_12_17_50_41.txt';
-'P06_150mv_100mV_Tag2_gnss_log_2021_06_12_18_59_13.txt';
+% 'P06_150mv_100mV_Tag2_gnss_log_2021_06_12_18_59_13.txt';
 'P07_150mV_100mV_Tag2_gnss_log_2021_06_12_18_01_46.txt';
 'P07_150mV_100mV_Tag2_gnss_log_2021_06_12_19_10_10.txt';
 'P08_150mV_100mV_Tag2_gnss_log_2021_06_12_19_33_19.txt';
@@ -49,7 +49,11 @@ FileTable = [
 'P34_150mV_100mV_Tag2_gnss_log_2021_06_14_16_42_18.txt';
 'P35_150mV_100mV_Tag2_gnss_log_2021_06_14_16_54_20.txt';  
 ];
-Nfile = size(FileTable,1); 
+Nfile = size(FileTable,1);
+
+% 删除旧的数据
+SaveDirName = './W203';
+delete([SaveDirName '/*'])
 %---------------------------------------------------------
 % Read GroundTruth from file
 fileID = fopen('groundTruth.txt','r');
@@ -71,12 +75,12 @@ for iFile = 1:Nfile
         
     % Filter
     dataFilter = SetDataFilter;
-    [gnssRaw,gnssAnalysis] = ReadGnssLogger(dirName,prFileName,dataFilter);
+    [gnssRaw,gnssAnalysis] = ReadGnssLogger(SourceDirName,prFileName,dataFilter);
     if isempty(gnssRaw), continue, end
     % ephemeris downloader
     fctSeconds = 1e-3*double(gnssRaw.allRxMillis(end));
     utcTime = Gps2Utc([],fctSeconds);
-    allGpsEph = GetNasaHourlyEphemeris(utcTime,dirName);
+    allGpsEph = GetNasaHourlyEphemeris(utcTime,SourceDirName);
     if isempty(allGpsEph), continue, end
 
     [gnssMeas] = ProcessGnssMeas(gnssRaw);
@@ -88,6 +92,7 @@ for iFile = 1:Nfile
     gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph); 
     % Distance
     distance.org = distanceM(gpsPvt.allLlaDegDegM,param.llaTrueDegDegM);
+    hdop.org = gpsPvt.hdop;
     if isempty(distance.org),  continue, end    
     
 % if 0       
@@ -95,22 +100,27 @@ for iFile = 1:Nfile
     gpsPvt_BKS = GpsWlsPvt(gnssMeas_BKS,allGpsEph); 
     % Distance
     distance.bks = distanceM(gpsPvt_BKS.allLlaDegDegM,param.llaTrueDegDegM);
-
+    hdop.bks = gpsPvt_BKS.hdop;
+    
     % NBKS
     gpsPvt_NBKS = GpsWlsPvt(gnssMeas_NBKS,allGpsEph);
     % Distance
     distance.nbks = distanceM(gpsPvt_NBKS.allLlaDegDegM,param.llaTrueDegDegM);
+    hdop.nbks = gpsPvt_NBKS.hdop;
 % end
     % Hbrid
     gpsPvt_H = GPSWlsPvtBks(gnssMeas,gnssMeas_BKS,gnssMeas_NBKS,allGpsEph,param.llaTrueDegDegM);
     % Distance
     distance.h = distanceM(gpsPvt_H.allLlaDegDegM,param.llaTrueDegDegM);
-    h5 = figure;
-    ts = 'HBKS_Raw Pseudoranges, Weighted Least Squares solution';
-    PlotPvtBackscatter(gpsPvt_H,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+    hdop.h = gpsPvt_H.hdop;
+    % 位置打点
+%     h5 = figure;
+%     ts = 'HBKS_Raw Pseudoranges, Weighted Least Squares solution';
+%     PlotPvtBackscatter(gpsPvt_H,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
 %     continue    
     
-    % save
+%---------------------------------------------------------
+% save file
     if ilastPoint == iPoint
         id = id + 1;
     else
@@ -118,5 +128,5 @@ for iFile = 1:Nfile
     end
     ilastPoint = iPoint;
     fname = sprintf('%02d_%02d',iPoint,id);
-    save(fname,'distance');
+    save([SaveDirName '/' fname],'distance','hdop');
 end

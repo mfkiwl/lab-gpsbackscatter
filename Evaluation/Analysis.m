@@ -1,19 +1,19 @@
-function [ AnalysisData ]=Analysis(FileName)
-% AnalysisData: 3 x 9
+function [ AnalysisData ]=Analysis(DirName,FileName)
+% AnalysisData: 4 x 10
 Ntype  = 4;
-Nvalue = 9;
+Nvalue = 10;
 
-load(FileName,'distance');
+load([DirName '/' FileName],'distance','hdop');
 % Point Num Aver Median Std Max Min CI_Upper CI_lower
 jIndex = {1 2 3 4 5 6 7 8 9 10 11};
-[jPoint, jNum, jAver, jMed, jStd, jMax, jMin, jCI_Upper, jCI_lower] = jIndex{:};
+[jPoint, jNum, jAver, jMed, jStd, jMax, jMin, jCI_Upper, jCI_lower, jHdop] = jIndex{:};
 
 AnalysisData = zeros(Ntype,Nvalue);
 
 a = strsplit(FileName,'_');
 AnalysisData(:,jPoint) = ones(Ntype,1) * str2double(a{1}(isstrprop(a{1},'digit')));
 
-% filter
+% distance filter 
 distance = disFilter(distance); 
 
 if isempty(distance.org)
@@ -29,6 +29,16 @@ SEM = AnalysisData(:,jStd) ./ sqrt(AnalysisData(:,jNum));            % Standard 
 ts = 1.96;  % 95%
 AnalysisData(:,jCI_Upper) = AnalysisData(:,jAver) + ts*SEM;% Confidence Intervals
 AnalysisData(:,jCI_lower) = AnalysisData(:,jAver) - ts*SEM;
+
+% hdop process
+AnalysisData(1,jHdop) = ExtractHdop(hdop.org);
+AnalysisData(2,jHdop) = ExtractHdop(hdop.bks);
+AnalysisData(3,jHdop) = ExtractHdop(hdop.nbks);
+AnalysisData(4,jHdop) = ExtractHdop(hdop.h);
+if ~isreal(AnalysisData(:,jHdop)) %
+    FileName
+    AnalysisData(:,jHdop)
+end
 end
 
 function disFiltered = disFilter(distance) 
@@ -51,4 +61,14 @@ AnalysisData(jMax) = max(distance);
 AnalysisData(jMin) = min(distance);
 
 AnalysisData = AnalysisData(jNum:jMin);
+end
+
+function [AnalysisData] = ExtractHdop(hdop)
+% Point Num Aver Median Std Max Min CI_Upper CI_lower
+jIndex = {1 2 3 4 5 6 7 8 9 10 11};
+[jPoint, jNum, jAver, jMed, jStd, jMax, jMin, jCI_Upper, jCI_lower, jHdop] = jIndex{:};
+
+AnalysisData(jHdop) = mean(hdop(find(hdop < inf)));
+
+AnalysisData = AnalysisData(jHdop);
 end
