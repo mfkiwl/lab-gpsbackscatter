@@ -1,4 +1,5 @@
-function [xHat,z,svPos,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph_BKS, gpsEph_NBKS,xo)
+function [xHat,z,svPos,H,Wpr,Wrr] = WlsPvtCoinGPS(prs_BKS,prs_NBKS,gpsEph_BKS, gpsEph_NBKS,xo)
+% 尝试恢复coinGPS算法
 % [xHat,z,svPos,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo)
 % 计算WLS PVT 解, xHat
 % given pseudoranges, pr rates, and initial state
@@ -88,21 +89,21 @@ svXyzTrx_NBKS = svXyzTtx_NBKS; %initialize svXyz at time of reception
 % delat_sv=svXyzTrx_BKS-svXyzTrx_NBKS
 
 %% 卫星对称映射
-sv_length=length(svXyzTrx_BKS(:,1));
-svXyzTtx_BKS_mirrored=ones(size(svXyzTrx_BKS));
-for i=1: sv_length
-    Temp=mirrorTransform(svXyzTrx_BKS(i,:),TagLocXyz0');
-    % disp(['坐标点：',num2str(xo(1:3)),'卫星坐标：',num2str(svXyzTrx_NBKS(i,:)),'映射坐标：',num2str(Temp)]);
-    % Coor1=xo(1:3).'
-    % CoorSv1=svXyzTrx_NBKS(i,:)
-    % CoorSv2=Temp
-    % Prm1=norm(CoorSv1-Coor1);
-    % Prm2=norm(CoorSv2-Coor1);
-    % delta_PrM=Prm1-Prm2
-    svXyzTtx_BKS_mirrored(i,:)=Temp;
-end
-svXyzTrx_BKS_mirrored = svXyzTtx_BKS_mirrored; %initialize svXyz at time of reception
-% svXyzTrx_BKS_mirrored = svXyzTrx_BKS; %initialize svXyz at time of reception
+% sv_length=length(svXyzTrx_BKS(:,1));
+% svXyzTtx_BKS_mirrored=ones(size(svXyzTrx_BKS));
+% for i=1: sv_length
+%     Temp=mirrorTransform(svXyzTrx_BKS(i,:),TagLocXyz0');
+%     % disp(['坐标点：',num2str(xo(1:3)),'卫星坐标：',num2str(svXyzTrx_NBKS(i,:)),'映射坐标：',num2str(Temp)]);
+%     % Coor1=xo(1:3).'
+%     % CoorSv1=svXyzTrx_NBKS(i,:)
+%     % CoorSv2=Temp
+%     % Prm1=norm(CoorSv1-Coor1);
+%     % Prm2=norm(CoorSv2-Coor1);
+%     % delta_PrM=Prm1-Prm2
+%     svXyzTtx_BKS_mirrored(i,:)=Temp;
+% end
+% svXyzTrx_BKS_mirrored = svXyzTtx_BKS_mirrored; %initialize svXyz at time of reception
+% % svXyzTrx_BKS_mirrored = svXyzTrx_BKS; %initialize svXyz at time of reception
 dtsv=[dtsv_BKS;dtsv_NBKS];
 
 %% % % 这里写下伪距差分的公式，上面计算出来的是真实的卫星位置，我们输入groundtruth计算伪距的差分值
@@ -153,7 +154,7 @@ while norm(dx) > GnssThresholds.MAXPRRUNCMPS % 10 % MAXDELPOSFORNAVM  % 20 m
         %   i.e ttx = ttxsv - dtsv
 %         RawSvXyzTrx_BKS_mirrored = svXyzTtx_BKS_mirrored;
         %对称映射
-        svXyzTrx_BKS_mirrored(i,:) = FlightTimeCorrection(svXyzTtx_BKS_mirrored(i,:), dtflight);
+        svXyzTrx_BKS(i,:) = FlightTimeCorrection(svXyzTtx_BKS(i,:), dtflight);
 %         disp(['BKS_dtflight= ',num2str(dtflight)])%输出矫正量
     end
     %输出校准量
@@ -174,7 +175,7 @@ while norm(dx) > GnssThresholds.MAXPRRUNCMPS % 10 % MAXDELPOSFORNAVM  % 20 m
   %calculate line of sight vectors and ranges from satellite to xo
 %   svXyzTrx=[svXyzTrx_BKS_mirrored;svXyzTrx_NBKS];
 %   v = xyz0(:)*ones(1,numVal,1) - svXyzTrx';%v(:,i) = vector from sv(i) to xyz0
-    v_BKS=xyz0(:)*ones(1,numVal_BKS,1) - svXyzTrx_BKS_mirrored'; %对称映射
+    v_BKS=xyz0(:)*ones(1,numVal_BKS,1) - svXyzTrx_BKS'; 
     v_NBKS=xyz0(:)*ones(1,numVal_NBKS,1) - svXyzTrx_NBKS';  
 
 %   range = sqrt( sum(v.^2) );
@@ -186,8 +187,8 @@ while norm(dx) > GnssThresholds.MAXPRRUNCMPS % 10 % MAXDELPOSFORNAVM  % 20 m
   % 发送信号时卫星的标号，位置，及其钟差
 %   svPos=[prs(:,jSv),svXyzTrx,dtsv(:)];
 %   dtsv=[dtsv_BKS;dtsv_NBKS];
-     svPos_BKS=[prs_BKS(:,jSv),svXyzTrx_BKS_mirrored,dtsv_BKS(:)];
-     svPos_NBKS=[prs_BKS(:,jSv),svXyzTrx_BKS_mirrored,dtsv_BKS(:)];
+     svPos_BKS=[prs_BKS(:,jSv),svXyzTrx_BKS,dtsv_BKS(:)];
+     svPos_NBKS=[prs_BKS(:,jSv),svXyzTrx_BKS,dtsv_BKS(:)];
      
   %calculate the a-priori range residual
 %   prHat = range(:) + bc - GpsConstants.LIGHTSPEED*dtsv;
@@ -208,8 +209,9 @@ while norm(dx) > GnssThresholds.MAXPRRUNCMPS % 10 % MAXDELPOSFORNAVM  % 20 m
     H=[H_BKS;H_NBKS];
    
 %   %z = Hx, premultiply by W: Wz = WHx, and solve for x:
-    dx = pinv(Wpr*H)*Wpr*zPr;
-
+%     dx = pinv(Wpr*H)*Wpr*zPr;
+% CoinGPS 的处理方式
+    dx = pinv(H.'* H)*(H.')*zPr;
   % update xo, xhat and bc
     xHat=xHat+dx;
     xyz0=xyz0(:)+dx(1:3);
