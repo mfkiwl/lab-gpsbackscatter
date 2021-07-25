@@ -215,9 +215,11 @@ while norm(dx) > GnssThresholds.MAXPRRUNCMPS % 10 % MAXDELPOSFORNAVM  % 20 m
     xyz0=xyz0(:)+dx(1:3);
 
 %% 钟差校准
+%   bc_BKS=dx(4);
   bc_BKS=bc_BKS+dx(4);
 %   bc_BKS=bc_BKS+dx(4)-ToF_deltaSeconds(i);
   bc_NBKS=bc_NBKS+dx(5);
+%   bc_NBKS=dx(5);
    disp(['Clock Bias 1: ',num2str(bc_BKS)]);
    disp(['Clock Bias 2: ',num2str(bc_NBKS)]);
   %Now calculate the a-posteriori range residual
