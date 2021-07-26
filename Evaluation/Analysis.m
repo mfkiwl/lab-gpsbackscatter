@@ -21,8 +21,6 @@ AnalysisData(2,jNum:jMin) = ExtractDis(distance.bks);
 AnalysisData(3,jNum:jMin) = ExtractDis(distance.nbks);
 AnalysisData(4,jNum:jMin) = ExtractDis(distance.h);
 
-
-
 SEM = AnalysisData(:,jStd) ./ sqrt(AnalysisData(:,jNum));            % Standard Error
 ts = 1.96;  % 95%
 AnalysisData(:,jCI_Upper) = AnalysisData(:,jAver) + ts*SEM;% Confidence Intervals

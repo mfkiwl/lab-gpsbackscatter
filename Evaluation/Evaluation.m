@@ -85,13 +85,13 @@ for iFile = 1:Nfile
 
     [gnssMeas] = ProcessGnssMeas(gnssRaw);
     % Satlite filter
-    SatNum = 4;
+    SatNum = 5;
     M = length(gnssMeas.Svid);
     if M < SatNum
        warning(['Not enough Satlite: ' num2str(M) '<' num2str(SatNum)])
        continue;
     else
-       gnssMeas = SatFilter(gnssMeas,SatNum);
+       gnssMeas = SatFilter(gnssMeas,SatNum,0);
     end  
 
     % Data Seperate
