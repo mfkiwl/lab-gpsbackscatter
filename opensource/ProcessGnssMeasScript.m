@@ -6,14 +6,16 @@
 close all;
 clear all;
 %% data
-% prFileName = 'gnss_log_2019_08_15_10_46_22.txt';
-prFileName = 'P2_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt';
- 
-% Raw and GPS data Path
-% dirName = 'D:\browser\GnssAnalysisWindowsV3.0.3.0\demofiles\adrDemo';
-dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
-% dirName = 'D:\Filerec\dingding';
-
+% % prFileName = 'gnss_log_2019_08_15_10_46_22.txt';
+% prFileName = 'P2_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt';
+%  
+% % Raw and GPS data Path
+% % dirName = 'D:\browser\GnssAnalysisWindowsV3.0.3.0\demofiles\adrDemo';
+% dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0720测试\TagLoc1';
+% dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0719测试\TagLoc1'
+% prFileName = 'P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
+prFileName = 'P12_146mV_100mV_gnss_log_2021_07_20_18_41_26.txt'; 
 %% parameters
 param.llaTrueDegDegM = [];
 %enter true WGS84 lla, if you know it:

@@ -1,12 +1,14 @@
 close all;
 clear 
 
-dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
-% dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
-
-% prFileName = 'P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16.txt'; 
+% dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+% dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0719测试'
 prFileName = 'P04_150mV_100mV_Tag2_gnss_log_2021_06_12_18_35_51.txt'; 
-
+% prFileName = 'P04_150mV_100mV_Tag2_gnss_log_2021_06_12_18_35_51.txt'; 
+% P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16
+% P03_150mV_100mV_Tag2_gnss_log_2021_06_12_18_01_51
+% P05_150mV_100mV_Tag2_gnss_log_2021_06_12_18_46_52
 %% Read GroundTruth from file
 fileID = fopen('groundTruth.txt','r');
 formatSpec = '%d %f %f %f';
@@ -32,7 +34,7 @@ if isempty(allGpsEph), return, end
 %% 
 [gnssMeas] = ProcessGnssMeas(gnssRaw);
 % Satlite filter
-gnssMeasFilter = SatFilter(gnssMeas,4,1);
+% gnssMeas = SatFilter(gnssMeas,4);
 % %% plot pseudoranges and pseudorange rates
 % h1 = figure;
 % [colors] = PlotPseudoranges(gnssMeas,prFileName);
@@ -136,6 +138,7 @@ for i= 1:N
     xo(1:3)= Lla2Xyz( GroundTruthLLA(6,:))';
     % [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo);%compute WLS solution
     [xHat,~,~,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph_BKS,gpsEph_NBKS,xo);
+%     [xHat,~,~,H,Wpr,Wrr] = WlsPvtCoinGPS(prs_BKS,prs_NBKS,gpsEph_BKS,gpsEph_NBKS,xo);
     % xHat是10*1的矩阵，其中123位对应定位位置, 4 弹过的钟差, 5 没弹的钟差, 678 速度, 9 钟差弹过的,10 钟差没弹的
     xo = xo + xHat; %包含速度，钟差等参数
 
@@ -159,15 +162,19 @@ for i= 1:N
     %compute HDOP
     H = [H(:,1:3)*RE2N', ones(numSvs_BKS + numSvs_NBKS,1)]; %observation matrix in NED
     P = inv(H'*H);%unweighted covariance
+%     if P(1,1)+P(2,2)<1.01e-5
+% %         A=1;
+%         disp(['病态方程',num2str(i)])
+%     end
     gpsPvt.hdop(i) = sqrt(P(1,1)+P(2,2));
     gpsPvt.pdop(i)  = sqrt(P(1,1)+P(2,2)+P(3,3));
     gpsPvt.tdop(i)  = sqrt(P(4,4));
     gpsPvt.gdop(i)  = sqrt(P(1,1)+P(2,2)+P(3,3)+P(4,4));
     
-    disp(['GPS HDOP：',num2str(gpsPvt.hdop(i))])
-    disp(['GPS PDOP：',num2str(gpsPvt.pdop(i))])
-    disp(['GPS TDOP：',num2str(gpsPvt.tdop(i))])
-    disp(['GPS GDOP：',num2str(gpsPvt.gdop(i))])
+%     disp(['GPS HDOP：',num2str(gpsPvt.hdop(i))])
+%     disp(['GPS PDOP：',num2str(gpsPvt.pdop(i))])
+%     disp(['GPS TDOP：',num2str(gpsPvt.tdop(i))])
+%     disp(['GPS GDOP：',num2str(gpsPvt.gdop(i))])
     
     %compute variance of llaDegDegM
     %inside LsPvt the weights are used like this: 
@@ -226,6 +233,62 @@ xs = sprintf('time (seconds)\n%s',prFileName);
 xlabel(xs,'Interpreter','none')
 % title(prFileName);
 hold off
+%% 分析钟差
+
+gpsPvt.allBcMeters_BKS = filloutliers(gpsPvt.allBcMeters_BKS,'linear');
+gpsPvt.allBcMeters_NBKS = filloutliers(gpsPvt.allBcMeters_NBKS,'linear');
+gpsPvt.allBcMeters_BKS =smooth(gpsPvt.allBcMeters_BKS);
+gpsPvt.allBcMeters_NBKS=smooth(gpsPvt.allBcMeters_NBKS);
+gpsPvt.allBcMeters_BKS = filloutliers(gpsPvt.allBcMeters_BKS,'linear');
+gpsPvt.allBcMeters_NBKS = filloutliers(gpsPvt.allBcMeters_NBKS,'linear');
+gpsPvt.allBcMeters_BKS =smooth(gpsPvt.allBcMeters_BKS);
+gpsPvt.allBcMeters_NBKS=smooth(gpsPvt.allBcMeters_NBKS);
+
+figure;
+hold on
+plot(gpsPvt.allBcMeters_BKS/GpsConstants.LIGHTSPEED);
+plot(gpsPvt.allBcMeters_NBKS/GpsConstants.LIGHTSPEED);
+title('Clock Bias (Smoothed)'),ylabel('(Meters)')
+xs = sprintf('time (seconds)\n%s',prFileName);
+xlabel(xs,'Interpreter','none')
+% title(prFileName);
+hold off
+
+ R_BKS=polyfit(gpsPvt.FctSeconds,gpsPvt.allBcMeters_BKS/GpsConstants.LIGHTSPEED,1);
+ K_BKS=R_BKS(1);
+ B_BKS=R_BKS(2);
+ P_BKS=polyval(R_BKS,gpsPvt.FctSeconds);
+ R_NBKS=polyfit(gpsPvt.FctSeconds,gpsPvt.allBcMeters_NBKS/GpsConstants.LIGHTSPEED,1);
+ K_NBKS=R_NBKS(1);
+ B_NBKS=R_NBKS(2);
+ P_NBKS=polyval(R_NBKS,gpsPvt.FctSeconds);
+ figure;
+  hold on;
+ plot(gpsPvt.FctSeconds,P_BKS);
+ plot(gpsPvt.FctSeconds,P_NBKS);
+ hold off
+ distance=GpsConstants.LIGHTSPEED.*(K_NBKS-K_BKS);
+ latitudeDistribution=distance*16/18.86;
+ longitudeDistribution=distance*10/18.86;
+ 
+ %% 位置校正
+
+if latitudeDistribution < 20
+% % 
+caliPosition=ones(size(gpsPvt.allLlaDegDegM)).*[longitudeDistribution.*10e-7 latitudeDistribution.*10e-6 0]
+gpsPvt.allLlaDegDegM= gpsPvt.allLlaDegDegM + caliPosition;
+else
+% % naive方式
+caliPosition=ones(size(gpsPvt.allLlaDegDegM)).*[0 0.0002 0];  
+gpsPvt.allLlaDegDegM= gpsPvt.allLlaDegDegM + caliPosition;  
+end
+h8 = figure;
+ts = 'HBKS_Raw Pseudoranges, Weighted Least Squares solution';
+PlotPvtBackscatter(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;%绘制位置图
+
+
+%  CorrectionVector=P(1:3).*distance;
+%  CorrectionVectorLla=Xyz2Lla(CorrectionVector);
 
 % figure;
 % plot(distance);
