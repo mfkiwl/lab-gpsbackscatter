@@ -1,4 +1,4 @@
-function [xHat,z,svPos,H,Wpr,Wrr] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph_BKS, gpsEph_NBKS,xo)
+function [xHat,z,svPos,H,Wpr,Wrr,flg_converge] = WlsPvtBackscatter(prs_BKS,prs_NBKS,gpsEph_BKS, gpsEph_NBKS,xo)
 % [xHat,z,svPos,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo)
 % 计算WLS PVT 解, xHat
 % given pseudoranges, pr rates, and initial state
@@ -137,11 +137,17 @@ dx=xHat+inf;
 whileCount=0; maxWhileCount=100; 
 %we expect the while loop to converge in < 10 iterations, even with initial
 %position on other side of the Earth (see Stanford course AA272C "Intro to GPS")
+flg_converge = 1;
 while norm(dx) > GnssThresholds.MAXPRRUNCMPS % 10 % MAXDELPOSFORNAVM  % 20 m
     whileCount=whileCount+1;
-    assert(whileCount < maxWhileCount,...
-        'while loop did not converge after %d iterations',whileCount);
-    %% 这一步用来做飞行时间矫正，判断飞行时间是否回过于长，弹过和不弹的分开判断
+%     assert(whileCount < maxWhileCount,...
+%         'while loop did not converge after %d iterations',whileCount);
+    if whileCount > maxWhileCount
+        warning('while loop did not converge after iterations');
+        flg_converge = 0;
+        return;
+    end
+%% 这一步用来做飞行时间矫正，判断飞行时间是否回过于长，弹过和不弹的分开判断
 %      prs=[prs_BKS;prs_NBKS];
     for i=1:length(gpsEph_BKS)
         % calculate tflight from, bc and dtsv
@@ -220,8 +226,8 @@ while norm(dx) > GnssThresholds.MAXPRRUNCMPS % 10 % MAXDELPOSFORNAVM  % 20 m
 %   bc_BKS=bc_BKS+dx(4)-ToF_deltaSeconds(i);
   bc_NBKS=bc_NBKS+dx(5);
 %   bc_NBKS=dx(5);
-   disp(['Clock Bias 1: ',num2str(bc_BKS)]);
-   disp(['Clock Bias 2: ',num2str(bc_NBKS)]);
+%    disp(['Clock Bias 1: ',num2str(bc_BKS)]);
+%    disp(['Clock Bias 2: ',num2str(bc_NBKS)]);
   %Now calculate the a-posteriori range residual
   zPr = zPr-H*dx;
   

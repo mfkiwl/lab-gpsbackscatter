@@ -1,8 +1,8 @@
 close all;
 clear 
 
-% dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
-dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+% dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
 % dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0719测试'
 prFileName = 'P04_150mV_100mV_Tag2_gnss_log_2021_06_12_18_35_51.txt'; 
 % prFileName = 'P04_150mV_100mV_Tag2_gnss_log_2021_06_12_18_35_51.txt'; 
@@ -234,15 +234,15 @@ xlabel(xs,'Interpreter','none')
 % title(prFileName);
 hold off
 %% 分析钟差
+gpsPvt.allBcMeters_BKS = filloutliers(gpsPvt.allBcMeters_BKS,'linear');
+gpsPvt.allBcMeters_NBKS = filloutliers(gpsPvt.allBcMeters_NBKS,'linear');
+gpsPvt.allBcMeters_BKS =smooth(gpsPvt.allBcMeters_BKS);
+gpsPvt.allBcMeters_NBKS=smooth(gpsPvt.allBcMeters_NBKS);
 
 gpsPvt.allBcMeters_BKS = filloutliers(gpsPvt.allBcMeters_BKS,'linear');
 gpsPvt.allBcMeters_NBKS = filloutliers(gpsPvt.allBcMeters_NBKS,'linear');
 gpsPvt.allBcMeters_BKS =smooth(gpsPvt.allBcMeters_BKS);
-gpsPvt.allBcMeters_NBKS=smooth(gpsPvt.allBcMeters_NBKS);
-gpsPvt.allBcMeters_BKS = filloutliers(gpsPvt.allBcMeters_BKS,'linear');
-gpsPvt.allBcMeters_NBKS = filloutliers(gpsPvt.allBcMeters_NBKS,'linear');
-gpsPvt.allBcMeters_BKS =smooth(gpsPvt.allBcMeters_BKS);
-gpsPvt.allBcMeters_NBKS=smooth(gpsPvt.allBcMeters_NBKS);
+gpsPvt.allBcMeters_NBKS=smooth(gpsPvt.allBcMeters_NBKS); 
 
 figure;
 hold on
@@ -258,15 +258,18 @@ hold off
  K_BKS=R_BKS(1);
  B_BKS=R_BKS(2);
  P_BKS=polyval(R_BKS,gpsPvt.FctSeconds);
+ 
  R_NBKS=polyfit(gpsPvt.FctSeconds,gpsPvt.allBcMeters_NBKS/GpsConstants.LIGHTSPEED,1);
  K_NBKS=R_NBKS(1);
  B_NBKS=R_NBKS(2);
  P_NBKS=polyval(R_NBKS,gpsPvt.FctSeconds);
+ 
  figure;
-  hold on;
+ hold on;
  plot(gpsPvt.FctSeconds,P_BKS);
  plot(gpsPvt.FctSeconds,P_NBKS);
  hold off
+ 
  distance=GpsConstants.LIGHTSPEED.*(K_NBKS-K_BKS);
  latitudeDistribution=distance*16/18.86;
  longitudeDistribution=distance*10/18.86;

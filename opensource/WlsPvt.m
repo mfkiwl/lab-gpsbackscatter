@@ -1,4 +1,4 @@
-function [xHat,z,svPos,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo)
+function [xHat,z,svPos,H,Wpr,Wrr,flg_converge] = WlsPvt(prs,gpsEph,xo)
 % [xHat,z,svPos,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo)
 % calculate a weighted least squares PVT solution, xHat
 % given pseudoranges, pr rates, and initial state
@@ -69,10 +69,16 @@ dx=xHat+inf;
 whileCount=0; maxWhileCount=100; 
 %we expect the while loop to converge in < 10 iterations, even with initial
 %position on other side of the Earth (see Stanford course AA272C "Intro to GPS")
+flg_converge = 1;
 while norm(dx) > GnssThresholds.MAXDELPOSFORNAVM
     whileCount=whileCount+1;
-    assert(whileCount < maxWhileCount,...
-        'while loop did not converge after %d iterations',whileCount);
+%     assert(whileCount < maxWhileCount,...
+%         'while loop did not converge after %d iterations',whileCount);
+    if whileCount > maxWhileCount
+        warning('while loop did not converge after iterations');
+        flg_converge = 0;
+        return;
+    end
     for i=1:length(gpsEph)
         % calculate tflight from, bc and dtsv
         dtflight = (prs(i,jPr)-bc)/GpsConstants.LIGHTSPEED + dtsv(i);

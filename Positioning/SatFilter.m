@@ -8,7 +8,7 @@ end
 
 M = length(gnssMeas.Svid);
 if M < SatNunmer
-   error('Not enough Satlite')
+   error(['Not enough Satlite: ' num2str(M) '<' num2str(SatNumer)])
 end
 
 if draw

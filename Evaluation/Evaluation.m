@@ -84,6 +84,16 @@ for iFile = 1:Nfile
     if isempty(allGpsEph), continue, end
 
     [gnssMeas] = ProcessGnssMeas(gnssRaw);
+    % Satlite filter
+    SatNum = 4;
+    M = length(gnssMeas.Svid);
+    if M < SatNum
+       warning(['Not enough Satlite: ' num2str(M) '<' num2str(SatNum)])
+       continue;
+    else
+       gnssMeas = SatFilter(gnssMeas,SatNum);
+    end  
+
     % Data Seperate
     [gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssMeas,prFileName,0);
 

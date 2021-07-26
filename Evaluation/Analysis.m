@@ -16,14 +16,12 @@ AnalysisData(:,jPoint) = ones(Ntype,1) * str2double(a{1}(isstrprop(a{1},'digit')
 % distance filter 
 distance = disFilter(distance); 
 
-if isempty(distance.org)
-    AnalysisData(:,:) = missing;
-    return;
-end
 AnalysisData(1,jNum:jMin) = ExtractDis(distance.org);
 AnalysisData(2,jNum:jMin) = ExtractDis(distance.bks);
 AnalysisData(3,jNum:jMin) = ExtractDis(distance.nbks);
 AnalysisData(4,jNum:jMin) = ExtractDis(distance.h);
+
+
 
 SEM = AnalysisData(:,jStd) ./ sqrt(AnalysisData(:,jNum));            % Standard Error
 ts = 1.96;  % 95%
@@ -52,6 +50,12 @@ function [AnalysisData] = ExtractDis(distance)
 % Point Num Aver Median Std Max Min CI_Upper CI_lower
 jIndex = {1 2 3 4 5 6 7 8 9 10 11};
 [jPoint, jNum, jAver, jMed, jStd, jMax, jMin, jCI_Upper, jCI_lower] = jIndex{:};
+
+if isempty(distance)
+    AnalysisData = zeros(1,jMin + 1 - jNum);
+    AnalysisData(1,:) = missing;
+    return;
+end
 
 AnalysisData(jNum) = length(distance);
 AnalysisData(jAver) = mean(distance);
