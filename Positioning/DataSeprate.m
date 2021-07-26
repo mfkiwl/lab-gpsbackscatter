@@ -46,7 +46,7 @@ if isempty(allGpsEph), return, end
 % [gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssMeas,prFileName);
 [gnssMeas_NBKS, gnssMeas_BKS] = Seprate(gnssMeas,prFileName,0);%位置反转
 
-if 0
+if 1
 %% plot Pvt results
 % Original
 gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph); 
