@@ -52,7 +52,7 @@ FileTable = [
 Nfile = size(FileTable,1);
 
 % 删除旧的数据
-SaveDirName = './W203';
+SaveDirName = './W203_5';
 delete([SaveDirName '/*'])
 %---------------------------------------------------------
 % Read GroundTruth from file
