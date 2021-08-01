@@ -1,10 +1,11 @@
 close all;
 clear 
 
-dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+% dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+dirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\C12ES\0728测试\TagLoc2_PN';
 % dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
 % dirName = 'E:\Users\ASUS\Documents\SynologyDrive\SynologyDrive\GPSBackscatter\Data\0719测试'
-prFileName = 'P04_150mV_100mV_Tag2_gnss_log_2021_06_12_18_35_51.txt'; 
+prFileName = 'P9_150mV_gnss_log_2021_07_28_17_18_15.txt'; 
 % prFileName = 'P04_150mV_100mV_Tag2_gnss_log_2021_06_12_18_35_51.txt'; 
 % P02_150mV_100mV_Tag2_gnss_log_2021_06_12_17_44_16
 % P03_150mV_100mV_Tag2_gnss_log_2021_06_12_18_01_51
@@ -40,8 +41,10 @@ if isempty(allGpsEph), return, end
 % [colors] = PlotPseudoranges(gnssMeas,prFileName);
 % h2 = figure;
 % PlotPseudorangeRates(gnssMeas,prFileName,colors);
-% h3 = figure;
+h3 = figure;
 % PlotCno(gnssMeas,prFileName,colors);
+PlotCno(gnssMeas,prFileName);
+return;
 %% Data Seperate
 % [gnssMeas_BKS, gnssMeas_NBKS] = Seprate(gnssMeas,prFileName);
 [gnssMeas_NBKS, gnssMeas_BKS] = Seprate(gnssMeas,prFileName,0);%位置反转
