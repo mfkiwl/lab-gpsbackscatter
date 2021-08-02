@@ -1,19 +1,40 @@
 close all;
 clear 
-SourceDirName = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+% 需要设定好 
+% 1.读取原始 TXT 文件的路径
+% 2.创建输出文件（距离误差，hdop）的保存路径，并设定好
+% 3.GroundTruth 文件放入到输出文件夹下，设定好总的点数
+% 4.设定参与计算的卫星数目
 
-[FileTable] = GetFile(SourceDirName);
+W203Dir = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+% C12 TAG_1 10 序列
+C12Dir_1 = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\C12ES\0728测试\TagLoc1';
+% C12 TAG_2 10 序列
+C12Dir_2 = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\C12ES\0728测试\TagLoc2';
+% C12 TAG_2 PN 序列
+C12Dir_2PN = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\C12ES\0728测试\TagLoc2_PN';
 
+% 获取文件和目录
+SourceDirName = C12Dir_2;
+[SaveDirName,FileTable] = GetTXTFile(SourceDirName);
 Nfile = size(FileTable,1);
 
+% 参与计算的卫星数目
+SatNum = 5;
+
 % 删除旧的数据
-SaveDirName = './W203_5';
-delete([SaveDirName '/*'])
+SaveDirName = [SaveDirName '_' num2str(SatNum)];
+delete([SaveDirName '/*.mat'])
 %---------------------------------------------------------
 % Read GroundTruth from file
-fileID = fopen('groundTruth.txt','r');
+if strcmp(SourceDirName,W203Dir)
+    NumGroundTruth = 35;
+elseif strcmp(SourceDirName,C12Dir_1) || strcmp(SourceDirName,C12Dir_2) 
+    NumGroundTruth = 9;
+end
+fileID = fopen([SaveDirName '/' 'groundTruth.txt'],'r');
 formatSpec = '%d %f %f %f';
-FileGroundTruthLLA = fscanf(fileID,formatSpec,[4 35])';
+FileGroundTruthLLA = fscanf(fileID,formatSpec,[4 NumGroundTruth])';
 GroundTruthLLA = FileGroundTruthLLA(:,2:4);
 
 %---------------------------------------------------------
@@ -40,7 +61,6 @@ for iFile = 1:Nfile
 
     [gnssMeas] = ProcessGnssMeas(gnssRaw);
     % Satlite filter
-    SatNum = 5;
     M = length(gnssMeas.Svid);
     if M < SatNum
        warning(['Not enough Satlite: ' num2str(M) '<' num2str(SatNum)])

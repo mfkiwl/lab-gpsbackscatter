@@ -1,11 +1,16 @@
-function [FileTable] = GetFile(SourceDirName)
+function [SaveDirName, FileTable] = GetTXTFile(SourceDirName)
 %GETFILE 此处显示有关此函数的摘要
 %   此处显示详细说明
 W203Dir = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\0612测试集_3Tag_35Point\Tag2_Loc11';
+% C12 TAG_1 10 序列
 C12Dir_1 = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\C12ES\0728测试\TagLoc1';
+% C12 TAG_2 10 序列
 C12Dir_2 = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\C12ES\0728测试\TagLoc2';
+% C12 TAG_2 PN 序列
+C12Dir_2PN = 'D:\file\Lab-Drive\Project\GPS_Backscatter\Data\C12ES\0728测试\TagLoc2_PN';
 
 if strcmp(SourceDirName, W203Dir)
+    SaveDirName = './W203';
     FileTable = [
     'P01_150mV_100mV_Tag2_gnss_log_2021_06_12_17_13_53.txt';
     'P01_150mV_100mV_Tag2_gnss_log_2021_06_12_17_32_33.txt';
@@ -55,6 +60,7 @@ if strcmp(SourceDirName, W203Dir)
     ];
 
 elseif strcmp(SourceDirName, C12Dir_1)
+    SaveDirName = './C12_1';
     FileTable = [
         'P1R_150mV_xxmV_gnss_log_2021_07_28_09_52_03.txt';
         'P2R_150mV_xxmV_gnss_log_2021_07_28_09_59_16.txt';
@@ -74,6 +80,7 @@ elseif strcmp(SourceDirName, C12Dir_1)
     ];   
     
     elseif strcmp(SourceDirName, C12Dir_2)
+    SaveDirName = './C12_2';
     FileTable = [
         'P1_150mV_xxmV_gnss_log_2021_07_28_15_09_37.txt';
         'P1_150mV_xxmV_gnss_log_2021_07_28_15_19_50.txt';
@@ -86,10 +93,14 @@ elseif strcmp(SourceDirName, C12Dir_1)
         'P8_150mV_xxmV_gnss_log_2021_07_28_16_39_57.txt';
         'P9_150mV_xxmV_gnss_log_2021_07_28_16_50_40.txt';
     ];    
+    elseif strcmp(SourceDirName, C12Dir_2PN)
+    SaveDirName = './C12_2PN';
+    FileTable = [
 
+    ]; 
+else
+    error('Directory has not been record !');
 end
-
-
 
 end
 
