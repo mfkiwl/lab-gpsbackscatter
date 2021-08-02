@@ -8,7 +8,7 @@ SDK_2.3.1_MKL03Z32xxx4/middleware/
 SDK_2.3.1_MKL03Z32xxx4/rtos/
 SDK_2.3.1_MKL03Z32xxx4/tools/
 SDK_2.3.1_MKL03Z32xxx4/*.xml
-SDK_2.3.1_MKL03Z32xxx4/*.txt
+
 
 
 Test/
@@ -16,7 +16,7 @@ Test/
 *.7z
 opensource.zip
 *.asv
-*.o
+
 MCU/GPS-backscatter/MDK-ARM/GPS-backscatter/GPS-backscatter.hex
 *.crf
 *.o
