@@ -44,7 +44,8 @@ end
 %% plot ne errors vs llaTrueDegDegM --------------------------------------------
 nedM = Lla2Ned(gpsPvt.allLlaDegDegM,llaRef);%keep the NaNs in for the plot
 %so we see a break in the lines where there was no position
-h123=subplot(4,1,1:2);
+% h123=subplot(4,1,1:2);
+
 h1 = plot(nedM(:,2),nedM(:,1));
 set(h1,'LineStyle','-','LineWidth',0.1,'Color',ltgray)
 hold on, plot(nedM(:,2),nedM(:,1),'cx'); 
@@ -90,6 +91,7 @@ text(0,medM,ts,'VerticalAlignment','bottom','Color',gray)
 tSeconds = gpsPvt.FctSeconds-gpsPvt.FctSeconds(1);
 
 %% plot speed
+if 0
 h123(2)=subplot(4,1,3);
 N = length(gpsPvt.FctSeconds);
 iGood = isfinite(gpsPvt.allVelMps(:,1));
@@ -97,6 +99,8 @@ speedMps = zeros(1,N)+NaN;
 speedMps(iGood) = sqrt(sum(gpsPvt.allVelMps(iGood,1:2)'.^2)); %horizontal speed
 plot(tSeconds,speedMps);grid on
 ylabel('Horiz. speed (m/s)')
+end
+
 % 
 % %% plot hdop & # sats
 %这部分绘图有问题
