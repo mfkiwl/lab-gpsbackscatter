@@ -14,7 +14,7 @@ a = strsplit(FileName,'_');
 AnalysisData(:,jPoint) = ones(Ntype,1) * str2double(a{1}(isstrprop(a{1},'digit')));
 
 % distance filter 
-distance = disFilter(distance); 
+distance = disFilter(distance,15); 
 
 AnalysisData(1,jNum:jMin) = ExtractDis(distance.org);
 AnalysisData(2,jNum:jMin) = ExtractDis(distance.bks);
@@ -37,11 +37,13 @@ if ~isreal(AnalysisData(:,jHdop)) %
 end
 end
 
-function disFiltered = disFilter(distance) 
-disFiltered.org = distance.org(find(distance.org < 30));
-disFiltered.bks = distance.bks(find(distance.bks < 30));
-disFiltered.nbks = distance.nbks(find(distance.nbks < 30));
-disFiltered.h = distance.h(find(distance.h < 30));
+function disFiltered = disFilter(distance,threshold) 
+disFiltered.org = distance.org(find(distance.org < 300));
+% disFiltered.org = distance.org;
+disFiltered.bks = distance.bks(find(distance.bks < threshold));
+% disFiltered.nbks = distance.nbks(find(distance.nbks < threshold));
+disFiltered.nbks = distance.org(find(distance.org < threshold));
+disFiltered.h = distance.h(find(distance.h < threshold));
 end
 
 function [AnalysisData] = ExtractDis(distance)
